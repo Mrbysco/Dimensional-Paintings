@@ -46,7 +46,17 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	}
 
 	public DimensionalPaintingEntity(FMLPlayMessages.SpawnEntity spawnEntity, World worldIn) {
-		super(PaintingRegistry.DIMENSIONAL_PAINTING.get(), worldIn);
+		super(PaintingRegistry.DIMENSIONAL_PAINTING.get(), worldIn, new BlockPos(spawnEntity.getPosX(),spawnEntity.getPosX(), spawnEntity.getPosZ()));
+
+		PacketBuffer additionalData = spawnEntity.getAdditionalData();
+		DimensionPaintingType type = PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
+		Direction direction = Direction.from2DDataValue(additionalData.readByte());
+		this.setDimensionType(type);
+		this.setDirection(direction);
+		Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
+		if(item != null) {
+			this.setItem(new ItemStack(item));
+		}
 	}
 
 	protected void defineSynchedData() {
@@ -143,14 +153,5 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	}
 
 	@Override
-	public void readSpawnData(PacketBuffer additionalData) {
-		DimensionPaintingType type = PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
-		Direction direction = Direction.from2DDataValue(additionalData.readByte());
-		this.setDimensionType(type);
-		this.setDirection(direction);
-		Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
-		if(item != null) {
-			this.setItem(new ItemStack(item));
-		}
-	}
+	public void readSpawnData(PacketBuffer additionalData) { }
 }
