@@ -9,6 +9,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.border.WorldBorder;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.ITeleporter;
 
@@ -33,14 +34,26 @@ public class PaintingTeleporter implements ITeleporter {
 	private static PortalInfo placeInExistingPortal(ServerWorld world, Entity entity, BlockPos pos, boolean isPlayer) {
 		int i = 200;
 		BlockPos blockpos = pos;
+		boolean isFromEnd = entity.level.dimension() == World.END && world.dimension() == World.OVERWORLD;
+		boolean isToEnd = world.dimension() == World.END;
 
-		PaintingWorldData worldData = PaintingWorldData.get(world);
-		List<PaintingLocation> paintingList = worldData.getDimensionPositions(world.dimension().location());
-		if(!paintingList.isEmpty()) {
-			for(PaintingLocation paintingPos : paintingList) {
-				if(distanceTo(pos, paintingPos.pos) < i) {
-					blockpos = paintingPos.pos.relative(paintingPos.getDirection());
-					break;
+		if(isFromEnd) {
+			blockpos = world.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, world.getSharedSpawnPos());
+			return new PortalInfo(new Vector3d((double)blockpos.getX() + 0.5D, (double)blockpos.getY(), (double)blockpos.getZ() + 0.5D), entity.getDeltaMovement(), entity.yRot, entity.xRot);
+		} else if(isToEnd) {
+			world.makeObsidianPlatform(world);
+			blockpos = ServerWorld.END_SPAWN_POINT;
+
+			return new PortalInfo(new Vector3d((double)blockpos.getX() + 0.5D, (double)blockpos.getY(), (double)blockpos.getZ() + 0.5D), entity.getDeltaMovement(), entity.yRot, entity.xRot);
+		} else {
+			PaintingWorldData worldData = PaintingWorldData.get(world);
+			List<PaintingLocation> paintingList = worldData.getDimensionPositions(world.dimension().location());
+			if(!paintingList.isEmpty()) {
+				for(PaintingLocation paintingPos : paintingList) {
+					if(distanceTo(pos, paintingPos.pos) < i) {
+						blockpos = paintingPos.pos.relative(paintingPos.getDirection());
+						break;
+					}
 				}
 			}
 		}
