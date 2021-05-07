@@ -3,8 +3,13 @@ package com.mrbysco.dimpaintings.entity;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
 import com.mrbysco.dimpaintings.registry.PaintingTypeRegistry;
+import com.mrbysco.dimpaintings.util.PaintingWorldData;
+import com.mrbysco.dimpaintings.util.TeleportHelper;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.RedstoneDiodeBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.MoverType;
 import net.minecraft.entity.item.HangingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -15,13 +20,17 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
@@ -43,10 +52,66 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 		super(PaintingRegistry.DIMENSIONAL_PAINTING.get(), world, blockPos);
 		this.setDimensionType(paintingType);
 		this.setDirection(direction);
+
+		if(!level.isClientSide) {
+			ServerWorld serverWorld = (ServerWorld) world;
+			PaintingWorldData worldData = PaintingWorldData.get(serverWorld);
+			worldData.addPositionToDimension(world.dimension().location(), getPos(), getDirection());
+		}
+	}
+
+	@Override
+	protected void removeAfterChangingDimensions() {
+		this.removed = false;
+	}
+
+	@Override
+	public boolean hurt(DamageSource damageSource, float amount) {
+		if (this.isInvulnerableTo(damageSource)) {
+			return false;
+		} else {
+			if (!this.removed && !this.level.isClientSide) {
+				removeStoredPosition();
+				this.remove();
+				this.markHurt();
+				this.dropItem(damageSource.getEntity());
+			}
+
+			return true;
+		}
+	}
+
+	public void move(MoverType type, Vector3d position) {
+		if (!this.level.isClientSide && !this.removed && position.lengthSqr() > 0.0D) {
+			removeStoredPosition();
+			this.remove();
+			this.dropItem((Entity)null);
+		}
+
+	}
+
+	public void push(double posX, double posY, double posZ) {
+		if (!this.level.isClientSide && !this.removed && posX * posX + posY * posY + posZ * posZ > 0.0D) {
+			removeStoredPosition();
+			this.remove();
+			this.dropItem((Entity)null);
+		}
+
+	}
+
+	private void removeStoredPosition() {
+		ServerWorld serverWorld = (ServerWorld) level;
+		PaintingWorldData worldData = PaintingWorldData.get(serverWorld);
+		worldData.removePositionFromDimension(level.dimension().location(), getPos());
+	}
+
+	@Override
+	public boolean canChangeDimensions() {
+		return false;
 	}
 
 	public DimensionalPaintingEntity(FMLPlayMessages.SpawnEntity spawnEntity, World worldIn) {
-		super(PaintingRegistry.DIMENSIONAL_PAINTING.get(), worldIn, new BlockPos(spawnEntity.getPosX(),spawnEntity.getPosX(), spawnEntity.getPosZ()));
+		super(PaintingRegistry.DIMENSIONAL_PAINTING.get(), worldIn, new BlockPos(spawnEntity.getPosX(), spawnEntity.getPosY(), spawnEntity.getPosZ()));
 
 		PacketBuffer additionalData = spawnEntity.getAdditionalData();
 		DimensionPaintingType type = PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
@@ -59,12 +124,28 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 		}
 	}
 
+	@Override
+	public void playerTouch(PlayerEntity player) {
+		super.playerTouch(player);
+		if(!level.isClientSide) {
+			boolean flag = player.distanceTo(this) < 1 && !player.isOnGround();
+			if(flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canChangeDimensions()) {
+				TeleportHelper.teleportToGivenDimension(player, this.dimensionType.getDimensionLocation());
+				return;
+			}
+		}
+	}
+
 	protected void defineSynchedData() {
 		this.getEntityData().define(DATA_ITEM_STACK, ItemStack.EMPTY);
 	}
 
 	public void setDimensionType(DimensionPaintingType type) {
 		this.dimensionType = type;
+	}
+
+	public DimensionPaintingType getDimensionType() {
+		return dimensionType;
 	}
 
 	public void addAdditionalSaveData(CompoundNBT compoundNBT) {
@@ -142,6 +223,16 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 
 	@Override
 	public IPacket<?> getAddEntityPacket() {
+		if(tickCount == 0) {
+			if(direction == Direction.NORTH)
+				setPosRaw(getX(), getY() - 0.5D, getZ());
+			if(direction == Direction.EAST)
+				setPosRaw(getX(), getY() - 0.5D, getZ());
+			if(direction == Direction.SOUTH)
+				this.setPosRaw(getX() - 0.5D, getY() - 0.5D, getZ());
+			if(direction == Direction.WEST)
+				setPosRaw(getX(), getY() - 0.5D, getZ() - 0.5D);
+		}
 		return NetworkHooks.getEntitySpawningPacket(this);
 	}
 
@@ -154,4 +245,80 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 
 	@Override
 	public void readSpawnData(PacketBuffer additionalData) { }
+
+	@Override
+	protected void recalculateBoundingBox() {
+		if (this.direction != null) {
+			double posX = (double)this.pos.getX() + 0.5D;
+			double posY = (double)this.pos.getY() + 0.5D;
+			double posZ = (double)this.pos.getZ() + 0.5D;
+
+			double d3 = 0.46875D;
+			double offWidth = this.offs(this.getWidth());
+			double offHeight = this.offs(this.getHeight());
+			posX = posX - (double)this.direction.getStepX() * d3;
+			posZ = posZ - (double)this.direction.getStepZ() * d3;
+			posY = posY + offHeight;
+			Direction direction = this.direction.getCounterClockWise();
+			posX = posX + offWidth * (double)direction.getStepX();
+			posZ = posZ + offWidth * (double)direction.getStepZ();
+			this.setPosRaw(posX, posY, posZ);
+			double width = (double)this.getWidth();
+			double height = (double)this.getHeight();
+			double width2 = (double)this.getWidth();
+			if (this.direction.getAxis() == Direction.Axis.Z) {
+				width2 = 1.0D;
+			} else {
+				width = 1.0D;
+			}
+
+			width = width / 32.0D;
+			height = height / 32.0D;
+			width2 = width2 / 32.0D;
+			this.setBoundingBox(new AxisAlignedBB(posX - width, posY - height, posZ - width2, posX + width, posY + height, posZ + width2));
+		}
+	}
+
+	private double offs(int size) {
+		return size % 32 == 0 ? 0.5D : 0.0D;
+	}
+
+
+	@Override
+	public boolean survives() {
+		if (!this.level.noCollision(this)) {
+			return false;
+		} else {
+			int i = Math.max(1, this.getWidth() / 16);
+			int j = Math.max(1, this.getHeight() / 16);
+			BlockPos blockpos = this.pos.relative(this.direction.getOpposite());
+			Direction direction = this.direction.getCounterClockWise();
+			BlockPos.Mutable blockpos$mutable = new BlockPos.Mutable();
+
+			for(int k = 0; k < i; ++k) {
+				for(int l = 0; l < j; ++l) {
+					int i1 = (i - 1) / -2;
+					int j1 = (j - 1) / -2;
+					blockpos$mutable.set(blockpos).move(direction, k + i1).move(Direction.UP, l + j1);
+					BlockState blockstate = this.level.getBlockState(blockpos$mutable);
+					if (net.minecraft.block.Block.canSupportCenter(this.level, blockpos$mutable, this.direction))
+						continue;
+					if (!blockstate.getMaterial().isSolid() && !RedstoneDiodeBlock.isDiode(blockstate)) {
+						return false;
+					}
+				}
+			}
+
+			return this.level.getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty();
+		}
+	}
+
+	@Override
+	public void refreshDimensions() {
+		double posX = this.getX();
+		double posY = this.getY();
+		double posZ = this.getZ();
+		super.refreshDimensions();
+		this.setPosRaw(posX, posY, posZ);
+	}
 }
