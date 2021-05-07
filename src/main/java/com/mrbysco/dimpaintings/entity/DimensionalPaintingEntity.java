@@ -27,18 +27,22 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.network.FMLPlayMessages;
 import net.minecraftforge.fml.network.NetworkHooks;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
 
 public class DimensionalPaintingEntity extends HangingEntity implements IEntityAdditionalSpawnData {
 	private static final DataParameter<ItemStack> DATA_ITEM_STACK = EntityDataManager.defineId(DimensionalPaintingEntity.class, DataSerializers.ITEM_STACK);
@@ -125,6 +129,27 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	}
 
 	@Override
+	public void tick() {
+		super.tick();
+
+		if(!level.isClientSide) {
+			List<Entity> nearbyEntities = this.level.getEntitiesOfClass(Entity.class, getBoundingBox());
+			if(!nearbyEntities.isEmpty()) {
+				for (Iterator<Entity> iterator = nearbyEntities.iterator(); iterator.hasNext(); ) {
+					Entity entityIn = iterator.next();
+					if(entityIn != this && !(entityIn instanceof FakePlayer) && !(entityIn instanceof PlayerEntity)) {
+						boolean flag = entityIn.distanceTo(this) < 1 && !entityIn.isOnGround();
+						if(flag && !entityIn.isPassenger() && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canChangeDimensions()) {
+							TeleportHelper.teleportToGivenDimension(entityIn, this.dimensionType.getDimensionLocation());
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	@Override
 	public void playerTouch(PlayerEntity player) {
 		super.playerTouch(player);
 		if(!level.isClientSide) {
@@ -205,6 +230,11 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 
 			this.spawnAtLocation(getItem());
 		}
+	}
+
+	@Override
+	public ItemStack getPickedResult(RayTraceResult target) {
+		return getItem();
 	}
 
 	public void playPlacementSound() {
