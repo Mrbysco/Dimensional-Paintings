@@ -64,6 +64,28 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 		}
 	}
 
+	public DimensionalPaintingEntity(FMLPlayMessages.SpawnEntity spawnEntity, World worldIn) {
+		this(worldIn, new BlockPos((int)spawnEntity.getPosX(), (int)spawnEntity.getPosY(), (int)spawnEntity.getPosZ()),
+				Direction.from2DDataValue(spawnEntity.getAdditionalData().readByte()),
+				PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getValue(ResourceLocation.tryParse(spawnEntity.getAdditionalData().readUtf())));
+
+		PacketBuffer additionalData = spawnEntity.getAdditionalData();
+		Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
+		if(item != null) {
+			this.setItem(new ItemStack(item));
+		}
+	}
+
+	@Override
+	protected void setDirection(Direction dir) {
+		super.setDirection(dir);
+	}
+
+	@Override
+	public IPacket<?> getAddEntityPacket() {
+		return NetworkHooks.getEntitySpawningPacket(this);
+	}
+
 	@Override
 	protected void removeAfterChangingDimensions() {
 		this.removed = false;
@@ -112,20 +134,6 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	@Override
 	public boolean canChangeDimensions() {
 		return false;
-	}
-
-	public DimensionalPaintingEntity(FMLPlayMessages.SpawnEntity spawnEntity, World worldIn) {
-		super(PaintingRegistry.DIMENSIONAL_PAINTING.get(), worldIn, new BlockPos(spawnEntity.getPosX(), spawnEntity.getPosY(), spawnEntity.getPosZ()));
-
-		PacketBuffer additionalData = spawnEntity.getAdditionalData();
-		DimensionPaintingType type = PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
-		Direction direction = Direction.from2DDataValue(additionalData.readByte());
-		this.setDimensionType(type);
-		this.setDirection(direction);
-		Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
-		if(item != null) {
-			this.setItem(new ItemStack(item));
-		}
 	}
 
 	@Override
@@ -252,24 +260,9 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	}
 
 	@Override
-	public IPacket<?> getAddEntityPacket() {
-		if(tickCount == 0) {
-			if(direction == Direction.NORTH)
-				setPosRaw(getX(), getY() - 0.5D, getZ());
-			if(direction == Direction.EAST)
-				setPosRaw(getX(), getY() - 0.5D, getZ());
-			if(direction == Direction.SOUTH)
-				this.setPosRaw(getX() - 0.5D, getY() - 0.5D, getZ());
-			if(direction == Direction.WEST)
-				setPosRaw(getX(), getY() - 0.5D, getZ() - 0.5D);
-		}
-		return NetworkHooks.getEntitySpawningPacket(this);
-	}
-
-	@Override
 	public void writeSpawnData(PacketBuffer buffer) {
-		buffer.writeUtf(this.dimensionType.getRegistryName().toString());
 		buffer.writeByte((byte)this.direction.get2DDataValue());
+		buffer.writeUtf(this.dimensionType.getRegistryName().toString());
 		buffer.writeUtf(getItem().getItem().getRegistryName().toString());
 	}
 
@@ -279,6 +272,20 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	@Override
 	protected void recalculateBoundingBox() {
 		if (this.direction != null) {
+			if(level.isClientSide) {
+				if(tickCount == 0) {
+					System.out.println(direction);
+					if(direction == Direction.NORTH)
+						this.pos = this.pos.offset(0, -0.5D, 0);
+					if(direction == Direction.EAST)
+						this.pos = this.pos.offset(0, -0.5D, 0);
+					if(direction == Direction.SOUTH)
+						this.pos = this.pos.offset(-0.5D, -0.5D, 0);
+					if(direction == Direction.WEST)
+						this.pos = this.pos.offset(0, -0.5D, -0.5D);
+				}
+			}
+
 			double posX = (double)this.pos.getX() + 0.5D;
 			double posY = (double)this.pos.getY() + 0.5D;
 			double posZ = (double)this.pos.getZ() + 0.5D;
