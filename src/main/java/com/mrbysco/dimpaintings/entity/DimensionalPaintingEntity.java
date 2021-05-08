@@ -274,7 +274,6 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 		if (this.direction != null) {
 			if(level.isClientSide) {
 				if(tickCount == 0) {
-					System.out.println(direction);
 					if(direction == Direction.NORTH)
 						this.pos = this.pos.offset(0, -0.5D, 0);
 					if(direction == Direction.EAST)
