@@ -125,7 +125,6 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 				this.vertex(matrix4f, matrix3f, vertexBuilder, f16, f17, f11, f13, f2, 1, 0, 0, l1);
 			}
 		}
-
 	}
 
 	private void vertex(Matrix4f matrix4f, Matrix3f matrix3f, IVertexBuilder vertexBuilder, float p_229121_4_, float p_229121_5_, float x, float y, float p_229121_8_, int p_229121_9_, int p_229121_10_, int p_229121_11_, int p_229121_12_) {

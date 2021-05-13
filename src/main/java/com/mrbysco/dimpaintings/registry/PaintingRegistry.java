@@ -36,5 +36,3 @@ public class PaintingRegistry {
 		return builder.build(id);
 	}
 }
-
-

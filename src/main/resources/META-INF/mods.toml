@@ -1,14 +1,20 @@
 modLoader="javafml"
-loaderVersion="[36,)"
-#issueTrackerURL="https://github.com/Mrbysco/"
+loaderVersion="[35,)"
+issueTrackerURL="https://github.com/Mrbysco/Dimensional-Paintings/issues"
 license="MIT"
 
 [[mods]]
 modId="dimpaintings"
 version="${file.jarVersion}"
 displayName="Dimensional Paintings"
-#displayURL="https://www.curseforge.com/minecraft/mc-mods/"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/dimensional-paintings"
 authors="Mrbysco, ShyNieke"
 description='''
-Mario anyone?
+Just jump in :)
 '''
+[[dependencies.dimpaintings]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.16.4,1.17)"
+ordering="NONE"
+side="BOTH"
