@@ -103,15 +103,21 @@ public class PaintingTeleporter implements ITeleporter {
 		int j = pos.getY() - 2;
 		int k = pos.getZ();
 		BlockPos.betweenClosed(i - 1, j + 1, k - 1, i + 1, j + 3, k + 1).forEach((blockPos) -> {
-			world.setBlockAndUpdate(blockPos, Blocks.AIR.defaultBlockState());
+			if(world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
+				world.setBlockAndUpdate(blockPos, Blocks.AIR.defaultBlockState());
+			}
 		});
 		BlockPos.betweenClosed(i - 2, j + 1, k - 2, i + 2, j + 4, k + 2).forEach((blockPos) -> {
-			if(!world.getFluidState(blockPos).isEmpty() || !world.isEmptyBlock(blockPos)) {
-				world.setBlockAndUpdate(blockPos, Blocks.BLACK_STAINED_GLASS.defaultBlockState());
+			if(world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
+				if(!world.getFluidState(blockPos).isEmpty() || !world.isEmptyBlock(blockPos)) {
+					world.setBlockAndUpdate(blockPos, Blocks.BLACK_STAINED_GLASS.defaultBlockState());
+				}
 			}
 		});
 		BlockPos.betweenClosed(i - 1, j, k - 1, i + 1, j, k + 1).forEach((blockPos) -> {
-			world.setBlockAndUpdate(blockPos, Blocks.OBSIDIAN.defaultBlockState());
+			if(world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
+				world.setBlockAndUpdate(blockPos, Blocks.OBSIDIAN.defaultBlockState());
+			}
 		});
 	}
 
