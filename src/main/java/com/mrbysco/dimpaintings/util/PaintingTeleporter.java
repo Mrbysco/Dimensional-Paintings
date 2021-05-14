@@ -79,7 +79,7 @@ public class PaintingTeleporter implements ITeleporter {
 	private static PortalInfo moveToSafeCoords(ServerWorld world, Entity entity, BlockPos pos) {
 		if (world.isEmptyBlock(pos.below())) {
 			int distance;
-			for(distance = 1; world.getBlockState(pos.below(distance)).isAir(); ++distance) {
+			for(distance = 1; world.isEmptyBlock(pos.below(distance)); ++distance) {
 			}
 
 			if (distance > 3) {
