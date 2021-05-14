@@ -1,5 +1,6 @@
 package com.mrbysco.dimpaintings.util;
 
+import net.minecraft.block.Blocks;
 import net.minecraft.block.PortalInfo;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -24,8 +25,10 @@ public class PaintingTeleporter implements ITeleporter {
 		PortalInfo pos;
 
 		if ((pos = placeInExistingPortal(destWorld, entity, dimensionPosition(entity, destWorld), entity instanceof PlayerEntity)) == null) {
-			pos = moveToSafeCoords(destWorld, entity);
+			pos = moveToSafeCoords(destWorld, entity, dimensionPosition(entity, destWorld));
 			pos = placeInExistingPortal(destWorld, entity, new BlockPos(pos.pos), entity instanceof PlayerEntity);
+		} else {
+			pos = moveToSafeCoords(destWorld, entity, dimensionPosition(entity, destWorld));
 		}
 		return pos;
 	}
@@ -72,12 +75,40 @@ public class PaintingTeleporter implements ITeleporter {
 		return MathHelper.sqrt(f * f + f1 * f1 + f2 * f2);
 	}
 
-	private static PortalInfo moveToSafeCoords(ServerWorld world, Entity entity) {
-		BlockPos pos = entity.blockPosition();
+	//Safety stuff
+	private static PortalInfo moveToSafeCoords(ServerWorld world, Entity entity, BlockPos pos) {
+		if (world.isEmptyBlock(pos.below())) {
+			int distance;
+			for(distance = 1; world.getBlockState(pos.below(distance)).isAir(); ++distance) {
+			}
 
-		//Safety stuff
+			if (distance > 3) {
+				makePlatform(world, pos);
+			}
+		} else {
+			if(!world.isEmptyBlock(pos.below()) || !world.isEmptyBlock(pos)) {
+				makePlatform(world, pos);
+			}
+		}
 
-		return makePortalInfo(entity, entity.position());
+		return makePortalInfo(entity, pos.getX(), pos.getY(), pos.getZ());
+	}
+
+	private static void makePlatform(ServerWorld world, BlockPos pos) {
+		int i = pos.getX();
+		int j = pos.getY() - 2;
+		int k = pos.getZ();
+		BlockPos.betweenClosed(i - 1, j + 1, k - 1, i + 1, j + 3, k + 1).forEach((blockPos) -> {
+			world.setBlockAndUpdate(blockPos, Blocks.AIR.defaultBlockState());
+		});
+		BlockPos.betweenClosed(i - 2, j + 1, k - 2, i + 2, j + 4, k + 2).forEach((blockPos) -> {
+			if(!world.getFluidState(blockPos).isEmpty() || !world.isEmptyBlock(blockPos)) {
+				world.setBlockAndUpdate(blockPos, Blocks.BLACK_STAINED_GLASS.defaultBlockState());
+			}
+		});
+		BlockPos.betweenClosed(i - 1, j, k - 1, i + 1, j, k + 1).forEach((blockPos) -> {
+			world.setBlockAndUpdate(blockPos, Blocks.OBSIDIAN.defaultBlockState());
+		});
 	}
 
 	private BlockPos dimensionPosition(Entity entity, World destWorld) {
@@ -105,10 +136,7 @@ public class PaintingTeleporter implements ITeleporter {
 		return new PortalInfo(pos, Vector3d.ZERO, entity.yRot, entity.xRot);
 	}
 
-//	protected final ServerWorld world;
-
 	public PaintingTeleporter(ServerWorld worldIn) {
-//		this.world = worldIn;
 	}
 
 	@Override

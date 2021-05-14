@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "OOO",
+    "OPO",
+    "OOO"  ],
+  "key": {
+    "P": [
+      {
+        "item": "minecraft:painting"
+      }
+    ],
+    "O": [
+      {
+        "tag": "forge:obsidian"
+      }
+    ]
+  },
+  "result": {
+    "item": "dimpaintings:nether_painting"
+  }
+}

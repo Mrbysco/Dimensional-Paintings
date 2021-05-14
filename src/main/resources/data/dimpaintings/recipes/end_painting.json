@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "EEE",
+    "EPE",
+    "EEE"  ],
+  "key": {
+    "P": [
+      {
+        "item": "minecraft:painting"
+      }
+    ],
+    "E": [
+      {
+        "item": "minecraft:ender_eye"
+      }
+    ]
+  },
+  "result": {
+    "item": "dimpaintings:end_painting"
+  }
+}
