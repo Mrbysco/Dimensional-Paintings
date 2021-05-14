@@ -86,6 +86,10 @@ public class PaintingTeleporter implements ITeleporter {
 				makePlatform(world, pos);
 			}
 		} else {
+			if(!world.isEmptyBlock(pos) && world.isEmptyBlock(pos.above()) && world.isEmptyBlock(pos.above(2))) {
+				BlockPos abovePos = pos.above(2);
+				return makePortalInfo(entity, abovePos.getX(), abovePos.getY(), abovePos.getZ());
+			}
 			if(!world.isEmptyBlock(pos.below()) || !world.isEmptyBlock(pos)) {
 				makePlatform(world, pos);
 			}
