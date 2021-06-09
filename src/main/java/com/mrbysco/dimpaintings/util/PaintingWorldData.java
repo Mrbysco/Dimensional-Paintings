@@ -48,8 +48,8 @@ public class PaintingWorldData extends WorldSavedData {
 					CompoundNBT tag = dimensionNBTList.getCompound(i);
 					if(tag.contains("BlockPos") && tag.contains("Direction")) {
 						BlockPos blockPos = BlockPos.of(tag.getLong("BlockPos"));
-						Direction direction = Direction.from2DDataValue(tag.getInt("Direction"));
-						posList.add(new PaintingLocation(blockPos, direction));
+						int direction2D = tag.getInt("Direction");
+						posList.add(new PaintingLocation(blockPos, direction2D));
 					}
 				}
 				paintingPositionMap.putAll(ResourceLocation.tryParse(nbtName), posList);
