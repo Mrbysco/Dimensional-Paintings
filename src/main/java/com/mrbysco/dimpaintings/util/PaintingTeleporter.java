@@ -15,6 +15,8 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.ITeleporter;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -24,39 +26,44 @@ public class PaintingTeleporter implements ITeleporter {
 	public PortalInfo getPortalInfo(Entity entity, ServerWorld destWorld, Function<ServerWorld, PortalInfo> defaultPortalInfo) {
 		PortalInfo pos;
 
-		if ((pos = placeInExistingPortal(destWorld, entity, dimensionPosition(entity, destWorld), entity instanceof PlayerEntity)) == null) {
-			pos = moveToSafeCoords(destWorld, entity, dimensionPosition(entity, destWorld));
-			pos = placeInExistingPortal(destWorld, entity, new BlockPos(pos.pos), entity instanceof PlayerEntity);
-		} else {
-			pos = moveToSafeCoords(destWorld, entity, dimensionPosition(entity, destWorld));
-		}
+		pos = placeInExistingPortal(destWorld, entity, dimensionPosition(entity, destWorld), entity instanceof PlayerEntity);
+
 		return pos;
 	}
 
 	@Nullable
-	private static PortalInfo placeInExistingPortal(ServerWorld world, Entity entity, BlockPos pos, boolean isPlayer) {
+	private static PortalInfo placeInExistingPortal(ServerWorld destWorld, Entity entity, BlockPos pos, boolean isPlayer) {
 		int i = 200;
 		BlockPos blockpos = pos;
-		boolean isFromEnd = entity.level.dimension() == World.END && world.dimension() == World.OVERWORLD;
-		boolean isToEnd = world.dimension() == World.END;
+		boolean isFromEnd = entity.level.dimension() == World.END && destWorld.dimension() == World.OVERWORLD;
+		boolean isToEnd = destWorld.dimension() == World.END;
 
 		if(isFromEnd) {
-			blockpos = world.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, world.getSharedSpawnPos());
+			blockpos = destWorld.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, destWorld.getSharedSpawnPos());
 			return new PortalInfo(new Vector3d((double)blockpos.getX() + 0.5D, (double)blockpos.getY(), (double)blockpos.getZ() + 0.5D), entity.getDeltaMovement(), entity.yRot, entity.xRot);
 		} else if(isToEnd) {
-			world.makeObsidianPlatform(world);
+			ServerWorld.makeObsidianPlatform(destWorld);
 			blockpos = ServerWorld.END_SPAWN_POINT;
 
 			return new PortalInfo(new Vector3d((double)blockpos.getX() + 0.5D, (double)blockpos.getY(), (double)blockpos.getZ() + 0.5D), entity.getDeltaMovement(), entity.yRot, entity.xRot);
 		} else {
-			PaintingWorldData worldData = PaintingWorldData.get(world);
-			List<PaintingLocation> paintingList = worldData.getDimensionPositions(world.dimension().location());
+			PaintingWorldData worldData = PaintingWorldData.get(destWorld);
+			List<PaintingLocation> paintingList = worldData.getDimensionPositions(destWorld.dimension().location());
 			if(!paintingList.isEmpty()) {
+				List<ClosestPosition> closestList = new ArrayList<>();
 				for(PaintingLocation paintingPos : paintingList) {
-					if(distanceTo(pos, paintingPos.pos) < i) {
+					int distance = (int)distanceTo(pos, paintingPos.pos);
+					if(distance < i) {
 						blockpos = paintingPos.pos.relative(paintingPos.getDirection());
-						break;
+						if (!blockpos.equals(BlockPos.ZERO)) {
+							closestList.add(new ClosestPosition(distance, blockpos));
+						}
 					}
+				}
+				if(!closestList.isEmpty()) {
+					Collections.sort(closestList);
+					blockpos = closestList.get(0).getPos();
+					return moveToSafeCoords(destWorld, entity, blockpos, false);
 				}
 			}
 		}
@@ -64,54 +71,59 @@ public class PaintingTeleporter implements ITeleporter {
 		if (blockpos.equals(BlockPos.ZERO)) {
 			return null;
 		} else {
-			return makePortalInfo(entity, blockpos.getX(), blockpos.getY(), blockpos.getZ());
+			return moveToSafeCoords(destWorld, entity, blockpos, true);
 		}
 	}
 
 	private static double distanceTo(BlockPos origin, BlockPos paintingPos) {
 		float f = (float)(origin.getX() - paintingPos.getX());
-		float f1 = (float)(origin.getY() - paintingPos.getY());
-		float f2 = (float)(origin.getZ() - paintingPos.getZ());
-		return MathHelper.sqrt(f * f + f1 * f1 + f2 * f2);
+		float f1 = (float)(origin.getZ() - paintingPos.getZ());
+		return MathHelper.sqrt(f * f + f1 * f1);
 	}
 
 	//Safety stuff
-	private static PortalInfo moveToSafeCoords(ServerWorld world, Entity entity, BlockPos pos) {
+	private static PortalInfo moveToSafeCoords(ServerWorld world, Entity entity, BlockPos pos, boolean withGlass) {
+		System.out.println(pos);
 		if (world.isEmptyBlock(pos.below())) {
 			int distance;
-			for(distance = 1; world.isEmptyBlock(pos.below(distance)); ++distance) {
+			for(distance = 1; world.getBlockState(pos.below(distance)).getBlock().isPossibleToRespawnInThis(); ++distance) {
 			}
 
-			if (distance > 3) {
-				makePlatform(world, pos);
+			if (distance > 4) {
+				makePlatform(world, pos, withGlass);
 			}
 		} else {
-			if(!world.isEmptyBlock(pos) && world.isEmptyBlock(pos.above()) && world.isEmptyBlock(pos.above(2))) {
+			if(!world.getBlockState(pos).getBlock().isPossibleToRespawnInThis() && world.getBlockState(pos.above()).getBlock().isPossibleToRespawnInThis() && world.getBlockState(pos.above(2)).getBlock().isPossibleToRespawnInThis()) {
 				BlockPos abovePos = pos.above(2);
 				return makePortalInfo(entity, abovePos.getX(), abovePos.getY(), abovePos.getZ());
 			}
+			System.out.println(pos.below() + " " + world.getBlockState(pos.below()));
+			System.out.println(pos + " " + world.getBlockState(pos));
 			if(!world.isEmptyBlock(pos.below()) || !world.isEmptyBlock(pos)) {
-				makePlatform(world, pos);
+				makePlatform(world, pos, withGlass);
 			}
 		}
 
 		return makePortalInfo(entity, pos.getX(), pos.getY(), pos.getZ());
 	}
 
-	private static void makePlatform(ServerWorld world, BlockPos pos) {
+	private static void makePlatform(ServerWorld world, BlockPos pos, boolean withGlass) {
+		System.out.println(pos);
 		int i = pos.getX();
 		int j = pos.getY() - 2;
 		int k = pos.getZ();
-		BlockPos.betweenClosed(i - 2, j + 1, k - 2, i + 2, j + 4, k + 2).forEach((blockPos) -> {
-			if(!world.getFluidState(blockPos).isEmpty() || world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
-				world.setBlockAndUpdate(blockPos, Blocks.BLACK_STAINED_GLASS.defaultBlockState());
-			}
-		});
-		BlockPos.betweenClosed(i - 1, j + 1, k - 1, i + 1, j + 3, k + 1).forEach((blockPos) -> {
-			if(world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
-				world.setBlockAndUpdate(blockPos, Blocks.AIR.defaultBlockState());
-			}
-		});
+		if(withGlass) {
+			BlockPos.betweenClosed(i - 2, j + 1, k - 2, i + 2, j + 4, k + 2).forEach((blockPos) -> {
+				if(!world.getFluidState(blockPos).isEmpty() || world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
+					world.setBlockAndUpdate(blockPos, Blocks.BLACK_STAINED_GLASS.defaultBlockState());
+				}
+			});
+			BlockPos.betweenClosed(i - 1, j + 1, k - 1, i + 1, j + 3, k + 1).forEach((blockPos) -> {
+				if(world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
+					world.setBlockAndUpdate(blockPos, Blocks.AIR.defaultBlockState());
+				}
+			});
+		}
 		BlockPos.betweenClosed(i - 1, j, k - 1, i + 1, j, k + 1).forEach((blockPos) -> {
 			if(world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
 				world.setBlockAndUpdate(blockPos, Blocks.OBSIDIAN.defaultBlockState());
@@ -151,5 +163,32 @@ public class PaintingTeleporter implements ITeleporter {
 	public Entity placeEntity(Entity newEntity, ServerWorld currentWorld, ServerWorld destWorld, float yaw, Function<Boolean, Entity> repositionEntity) {
 		newEntity.fallDistance = 0;
 		return repositionEntity.apply(false); //Must be false or we fall on vanilla
+	}
+
+	static class ClosestPosition implements Comparable<ClosestPosition> {
+		private final int distance;
+		private final BlockPos pos;
+
+		ClosestPosition(int distance, BlockPos pos) {
+			this.distance = distance;
+			this.pos = pos;
+		}
+
+		public int getDistance() {
+			return distance;
+		}
+
+		public BlockPos getPos() {
+			return pos;
+		}
+
+		@Override
+		public int compareTo(ClosestPosition anotherPosition) {
+			return compare(this.distance, anotherPosition.getDistance());
+		}
+
+		public static int compare(int x, int y) {
+			return Integer.compare(x, y);
+		}
 	}
 }

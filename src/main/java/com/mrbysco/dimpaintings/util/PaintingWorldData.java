@@ -83,9 +83,9 @@ public class PaintingWorldData extends WorldSavedData {
 		PaintingLocation position = new PaintingLocation(roundedPos, direction);
 		List<PaintingLocation> similarPos = paintingPositionMap.get(dimensionLocation).stream().filter((loc) -> loc.distanceTo(roundedPos) < 2).collect(Collectors.toList());
 		if(similarPos.isEmpty()) {
-			paintingPositionMap.get(dimensionLocation).add(position);
+			paintingPositionMap.get(dimensionLocation)
+					.add(position);
 		}
-
 		setDirty();
 	}
 

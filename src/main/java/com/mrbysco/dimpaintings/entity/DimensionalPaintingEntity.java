@@ -148,6 +148,7 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 					if(entityIn != this && !(entityIn instanceof FakePlayer) && !(entityIn instanceof PlayerEntity)) {
 						boolean flag = entityIn.distanceTo(this) < 1 && !entityIn.isOnGround();
 						if(flag && !entityIn.isPassenger() && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canChangeDimensions()) {
+							entityIn.teleportTo((int)this.getX(), (int)this.getY(), (int)this.getZ());
 							TeleportHelper.teleportToGivenDimension(entityIn, this.dimensionType.getDimensionLocation());
 							return;
 						}
@@ -163,6 +164,7 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 		if(!level.isClientSide) {
 			boolean flag = player.distanceTo(this) < 1 && !player.isOnGround();
 			if(flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canChangeDimensions()) {
+				player.teleportTo((int)this.getX(), (int)this.getY(), (int)this.getZ());
 				TeleportHelper.teleportToGivenDimension(player, this.dimensionType.getDimensionLocation());
 				return;
 			}
