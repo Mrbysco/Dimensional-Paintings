@@ -45,9 +45,10 @@ public class DimensionalPaintingItem extends Item {
 				if (!world.isClientSide) {
 					hangingentity.playPlacementSound();
 					world.addFreshEntity(hangingentity);
+
+					itemstack.shrink(1);
 				}
 
-				itemstack.shrink(1);
 				return ActionResultType.sidedSuccess(world.isClientSide);
 			} else {
 				return ActionResultType.CONSUME;
