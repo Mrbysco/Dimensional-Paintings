@@ -83,7 +83,6 @@ public class PaintingTeleporter implements ITeleporter {
 
 	//Safety stuff
 	private static PortalInfo moveToSafeCoords(ServerWorld world, Entity entity, BlockPos pos, boolean withGlass) {
-		System.out.println(pos);
 		if (world.isEmptyBlock(pos.below())) {
 			int distance;
 			for(distance = 1; world.getBlockState(pos.below(distance)).getBlock().isPossibleToRespawnInThis(); ++distance) {
@@ -97,8 +96,6 @@ public class PaintingTeleporter implements ITeleporter {
 				BlockPos abovePos = pos.above(2);
 				return makePortalInfo(entity, abovePos.getX(), abovePos.getY(), abovePos.getZ());
 			}
-			System.out.println(pos.below() + " " + world.getBlockState(pos.below()));
-			System.out.println(pos + " " + world.getBlockState(pos));
 			if(!world.isEmptyBlock(pos.below()) || !world.isEmptyBlock(pos)) {
 				makePlatform(world, pos, withGlass);
 			}
@@ -108,7 +105,6 @@ public class PaintingTeleporter implements ITeleporter {
 	}
 
 	private static void makePlatform(ServerWorld world, BlockPos pos, boolean withGlass) {
-		System.out.println(pos);
 		int i = pos.getX();
 		int j = pos.getY() - 2;
 		int k = pos.getZ();
