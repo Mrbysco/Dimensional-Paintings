@@ -5,71 +5,71 @@ import com.mrbysco.dimpaintings.registry.PaintingRegistry;
 import com.mrbysco.dimpaintings.registry.PaintingTypeRegistry;
 import com.mrbysco.dimpaintings.util.PaintingWorldData;
 import com.mrbysco.dimpaintings.util.TeleportHelper;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.RedstoneDiodeBlock;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.MoverType;
-import net.minecraft.entity.item.HangingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.IPacket;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.decoration.HangingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.DiodeBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
-import net.minecraftforge.fml.network.FMLPlayMessages;
-import net.minecraftforge.fml.network.NetworkHooks;
+import net.minecraftforge.fmllegacy.common.registry.IEntityAdditionalSpawnData;
+import net.minecraftforge.fmllegacy.network.FMLPlayMessages;
+import net.minecraftforge.fmllegacy.network.NetworkHooks;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 
-public class DimensionalPaintingEntity extends HangingEntity implements IEntityAdditionalSpawnData {
-	private static final DataParameter<ItemStack> DATA_ITEM_STACK = EntityDataManager.defineId(DimensionalPaintingEntity.class, DataSerializers.ITEM_STACK);
+public class DimensionalPainting extends HangingEntity implements IEntityAdditionalSpawnData {
+	private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK = SynchedEntityData.defineId(DimensionalPainting.class, EntityDataSerializers.ITEM_STACK);
 	public DimensionPaintingType dimensionType;
 
-	public DimensionalPaintingEntity(EntityType<? extends DimensionalPaintingEntity> entityType, World world) {
+	public DimensionalPainting(EntityType<? extends DimensionalPainting> entityType, Level world) {
 		super(entityType, world);
 	}
 
-	public DimensionalPaintingEntity(World world, BlockPos blockPos, Direction direction, DimensionPaintingType paintingType) {
+	public DimensionalPainting(Level world, BlockPos blockPos, Direction direction, DimensionPaintingType paintingType) {
 		super(PaintingRegistry.DIMENSIONAL_PAINTING.get(), world, blockPos);
 		this.setDimensionType(paintingType);
 		this.setDirection(direction);
 
 		if(!level.isClientSide) {
-			ServerWorld serverWorld = (ServerWorld) world;
+			ServerLevel serverWorld = (ServerLevel) world;
 			PaintingWorldData worldData = PaintingWorldData.get(serverWorld);
 			worldData.addPositionToDimension(world.dimension().location(), getPos(), getDirection());
 		}
 	}
 
-	public DimensionalPaintingEntity(FMLPlayMessages.SpawnEntity spawnEntity, World worldIn) {
+	public DimensionalPainting(FMLPlayMessages.SpawnEntity spawnEntity, Level worldIn) {
 		this(worldIn, new BlockPos((int)spawnEntity.getPosX(), (int)spawnEntity.getPosY(), (int)spawnEntity.getPosZ()),
 				Direction.from2DDataValue(spawnEntity.getAdditionalData().readByte()),
 				PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getValue(ResourceLocation.tryParse(spawnEntity.getAdditionalData().readUtf())));
 
-		PacketBuffer additionalData = spawnEntity.getAdditionalData();
+		FriendlyByteBuf additionalData = spawnEntity.getAdditionalData();
 		Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
 		if(item != null) {
 			this.setItem(new ItemStack(item));
@@ -82,13 +82,13 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	}
 
 	@Override
-	public IPacket<?> getAddEntityPacket() {
+	public Packet<?> getAddEntityPacket() {
 		return NetworkHooks.getEntitySpawningPacket(this);
 	}
 
 	@Override
 	protected void removeAfterChangingDimensions() {
-		this.removed = false;
+//		this.removed = false;
 	}
 
 	@Override
@@ -96,9 +96,9 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 		if (this.isInvulnerableTo(damageSource)) {
 			return false;
 		} else {
-			if (!this.removed && !this.level.isClientSide) {
+			if (!this.isRemoved() && !this.level.isClientSide) {
 				removeStoredPosition();
-				this.remove();
+				this.kill();
 				this.markHurt();
 				this.dropItem(damageSource.getEntity());
 			}
@@ -107,26 +107,26 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 		}
 	}
 
-	public void move(MoverType type, Vector3d position) {
-		if (!this.level.isClientSide && !this.removed && position.lengthSqr() > 0.0D) {
+	public void move(MoverType type, Vec3 position) {
+		if (!this.level.isClientSide && !this.isRemoved() && position.lengthSqr() > 0.0D) {
 			removeStoredPosition();
-			this.remove();
+			this.kill();
 			this.dropItem((Entity)null);
 		}
 
 	}
 
 	public void push(double posX, double posY, double posZ) {
-		if (!this.level.isClientSide && !this.removed && posX * posX + posY * posY + posZ * posZ > 0.0D) {
+		if (!this.level.isClientSide && !this.isRemoved() && posX * posX + posY * posY + posZ * posZ > 0.0D) {
 			removeStoredPosition();
-			this.remove();
+			this.kill();
 			this.dropItem((Entity)null);
 		}
 
 	}
 
 	private void removeStoredPosition() {
-		ServerWorld serverWorld = (ServerWorld) level;
+		ServerLevel serverWorld = (ServerLevel) level;
 		PaintingWorldData worldData = PaintingWorldData.get(serverWorld);
 		worldData.removePositionFromDimension(level.dimension().location(), getPos());
 	}
@@ -145,7 +145,7 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 			if(!nearbyEntities.isEmpty()) {
 				for (Iterator<Entity> iterator = nearbyEntities.iterator(); iterator.hasNext(); ) {
 					Entity entityIn = iterator.next();
-					if(entityIn != this && !(entityIn instanceof FakePlayer) && !(entityIn instanceof PlayerEntity)) {
+					if(entityIn != this && !(entityIn instanceof FakePlayer) && !(entityIn instanceof Player)) {
 						boolean flag = entityIn.distanceTo(this) < 1 && !entityIn.isOnGround();
 						if(flag && !entityIn.isPassenger() && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canChangeDimensions()) {
 							entityIn.teleportTo((int)this.getX(), (int)this.getY(), (int)this.getZ());
@@ -159,7 +159,7 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	}
 
 	@Override
-	public void playerTouch(PlayerEntity player) {
+	public void playerTouch(Player player) {
 		super.playerTouch(player);
 		if(!level.isClientSide) {
 			boolean flag = player.distanceTo(this) < 1 && !player.isOnGround();
@@ -183,17 +183,17 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 		return dimensionType;
 	}
 
-	public void addAdditionalSaveData(CompoundNBT compoundNBT) {
+	public void addAdditionalSaveData(CompoundTag compoundNBT) {
 		compoundNBT.putString("Dimension", PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(this.dimensionType).toString());
 		compoundNBT.putByte("Facing", (byte)this.direction.get2DDataValue());
 		ItemStack itemstack = this.getItemRaw();
 		if (!itemstack.isEmpty()) {
-			compoundNBT.put("Item", itemstack.save(new CompoundNBT()));
+			compoundNBT.put("Item", itemstack.save(new CompoundTag()));
 		}
 		super.addAdditionalSaveData(compoundNBT);
 	}
 
-	public void readAdditionalSaveData(CompoundNBT compoundNBT) {
+	public void readAdditionalSaveData(CompoundTag compoundNBT) {
 		this.dimensionType = PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getValue(ResourceLocation.tryParse(compoundNBT.getString("Dimension")));
 		this.direction = Direction.from2DDataValue(compoundNBT.getByte("Facing"));
 		super.readAdditionalSaveData(compoundNBT);
@@ -204,9 +204,7 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 
 	public void setItem(ItemStack p_213884_1_) {
 		if (p_213884_1_.getItem() != PaintingRegistry.OVERWORLD_PAINTING.get() || p_213884_1_.hasTag()) {
-			this.getEntityData().set(DATA_ITEM_STACK, Util.make(p_213884_1_.copy(), (p_213883_0_) -> {
-				p_213883_0_.setCount(1);
-			}));
+			this.getEntityData().set(DATA_ITEM_STACK, Util.make(p_213884_1_.copy(), (stack) -> stack.setCount(1)));
 		}
 
 	}
@@ -231,9 +229,8 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	public void dropItem(@Nullable Entity entity) {
 		if (this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
 			this.playSound(SoundEvents.PAINTING_BREAK, 1.0F, 1.0F);
-			if (entity instanceof PlayerEntity) {
-				PlayerEntity playerentity = (PlayerEntity)entity;
-				if (playerentity.abilities.instabuild) {
+			if (entity instanceof Player player) {
+				if (player.getAbilities().instabuild) {
 					return;
 				}
 			}
@@ -243,7 +240,7 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	}
 
 	@Override
-	public ItemStack getPickedResult(RayTraceResult target) {
+	public ItemStack getPickedResult(HitResult target) {
 		return getItem();
 	}
 
@@ -262,14 +259,14 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	}
 
 	@Override
-	public void writeSpawnData(PacketBuffer buffer) {
+	public void writeSpawnData(FriendlyByteBuf buffer) {
 		buffer.writeByte((byte)this.direction.get2DDataValue());
 		buffer.writeUtf(this.dimensionType.getRegistryName().toString());
 		buffer.writeUtf(getItem().getItem().getRegistryName().toString());
 	}
 
 	@Override
-	public void readSpawnData(PacketBuffer additionalData) { }
+	public void readSpawnData(FriendlyByteBuf additionalData) { }
 
 	@Override
 	protected void recalculateBoundingBox() {
@@ -313,7 +310,7 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 			width = width / 32.0D;
 			height = height / 32.0D;
 			width2 = width2 / 32.0D;
-			this.setBoundingBox(new AxisAlignedBB(posX - width, posY - height, posZ - width2, posX + width, posY + height, posZ + width2));
+			this.setBoundingBox(new AABB(posX - width, posY - height, posZ - width2, posX + width, posY + height, posZ + width2));
 		}
 	}
 
@@ -331,7 +328,7 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 			int j = Math.max(1, this.getHeight() / 16);
 			BlockPos blockpos = this.pos.relative(this.direction.getOpposite());
 			Direction direction = this.direction.getCounterClockWise();
-			BlockPos.Mutable blockpos$mutable = new BlockPos.Mutable();
+			BlockPos.MutableBlockPos blockpos$mutable = new BlockPos.MutableBlockPos();
 
 			for(int k = 0; k < i; ++k) {
 				for(int l = 0; l < j; ++l) {
@@ -339,9 +336,9 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 					int j1 = (j - 1) / -2;
 					blockpos$mutable.set(blockpos).move(direction, k + i1).move(Direction.UP, l + j1);
 					BlockState blockstate = this.level.getBlockState(blockpos$mutable);
-					if (net.minecraft.block.Block.canSupportCenter(this.level, blockpos$mutable, this.direction))
+					if (net.minecraft.world.level.block.Block.canSupportCenter(this.level, blockpos$mutable, this.direction))
 						continue;
-					if (!blockstate.getMaterial().isSolid() && !RedstoneDiodeBlock.isDiode(blockstate)) {
+					if (!blockstate.getMaterial().isSolid() && !DiodeBlock.isDiode(blockstate)) {
 						return false;
 					}
 				}

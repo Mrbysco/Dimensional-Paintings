@@ -3,40 +3,46 @@ package com.mrbysco.dimpaintings.util;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.mrbysco.dimpaintings.DimPaintings;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.DimensionSavedDataManager;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PaintingWorldData extends WorldSavedData {
+public class PaintingWorldData extends SavedData {
 	private static final String DATA_NAME = DimPaintings.MOD_ID + "_world_data";
+	public PaintingWorldData(ListMultimap<ResourceLocation, PaintingLocation> paintingMap) {
+		this.paintingPositionMap.clear();
+		if(!paintingMap.isEmpty()) {
+			this.paintingPositionMap.putAll(paintingMap);
+		}
+	}
+
 	public PaintingWorldData() {
-		super(DATA_NAME);
+		this(ArrayListMultimap.create());
 	}
 
 	private final ListMultimap<ResourceLocation, PaintingLocation> paintingPositionMap = ArrayListMultimap.create();
 
-	@Override
-	public void load(CompoundNBT compound) {
-		for(String nbtName : compound.getAllKeys()) {
-			ListNBT dimensionNBTList = new ListNBT();
-			if(compound.getTagType(nbtName) == 9) {
-				INBT nbt = compound.get(nbtName);
-				if(nbt instanceof ListNBT) {
-					ListNBT listNBT = (ListNBT) nbt;
+	public static PaintingWorldData load(CompoundTag tag) {
+		ListMultimap<ResourceLocation, PaintingLocation> paintingMap = ArrayListMultimap.create();
+		for(String nbtName : tag.getAllKeys()) {
+			ListTag dimensionNBTList = new ListTag();
+			if(tag.getTagType(nbtName) == 9) {
+				Tag nbt = tag.get(nbtName);
+				if(nbt instanceof ListTag listNBT) {
 					if (!listNBT.isEmpty() && listNBT.getElementType() != Constants.NBT.TAG_COMPOUND) {
-						return;
+						continue;
 					}
 
 					dimensionNBTList = listNBT;
@@ -45,26 +51,27 @@ public class PaintingWorldData extends WorldSavedData {
 			if(!dimensionNBTList.isEmpty()) {
 				List<PaintingLocation> posList = new ArrayList<>();
 				for (int i = 0; i < dimensionNBTList.size(); ++i) {
-					CompoundNBT tag = dimensionNBTList.getCompound(i);
-					if(tag.contains("BlockPos") && tag.contains("Direction")) {
-						BlockPos blockPos = BlockPos.of(tag.getLong("BlockPos"));
-						int direction2D = tag.getInt("Direction");
+					CompoundTag dimTag = dimensionNBTList.getCompound(i);
+					if(dimTag.contains("BlockPos") && dimTag.contains("Direction")) {
+						BlockPos blockPos = BlockPos.of(dimTag.getLong("BlockPos"));
+						int direction2D = dimTag.getInt("Direction");
 						posList.add(new PaintingLocation(blockPos, direction2D));
 					}
 				}
-				paintingPositionMap.putAll(ResourceLocation.tryParse(nbtName), posList);
+				paintingMap.putAll(ResourceLocation.tryParse(nbtName), posList);
 			}
 		}
+		return new PaintingWorldData(paintingMap);
 	}
 
 	@Override
-	public CompoundNBT save(CompoundNBT compound) {
+	public CompoundTag save(CompoundTag compound) {
 		for (ResourceLocation dimensionLocation: paintingPositionMap.keySet()) {
 			List<PaintingLocation> globalPosList = paintingPositionMap.get(dimensionLocation);
 
-			ListNBT dimensionStorage = new ListNBT();
+			ListTag dimensionStorage = new ListTag();
 			for (PaintingLocation paintLoc : globalPosList) {
-				CompoundNBT positionTag = new CompoundNBT();
+				CompoundTag positionTag = new CompoundTag();
 				positionTag.putLong("BlockPos", paintLoc.pos.asLong());
 				positionTag.putInt("Direction", paintLoc.direction2D);
 				dimensionStorage.add(positionTag);
@@ -95,13 +102,13 @@ public class PaintingWorldData extends WorldSavedData {
 		setDirty();
 	}
 
-	public static PaintingWorldData get(World world) {
-		if (!(world instanceof ServerWorld)) {
+	public static PaintingWorldData get(Level world) {
+		if (!(world instanceof ServerLevel)) {
 			throw new RuntimeException("Attempted to get the data from a client world. This is wrong.");
 		}
-		ServerWorld overworld = world.getServer().getLevel(World.OVERWORLD);
+		ServerLevel overworld = world.getServer().getLevel(Level.OVERWORLD);
 
-		DimensionSavedDataManager storage = overworld.getDataStorage();
-		return storage.computeIfAbsent(PaintingWorldData::new, DATA_NAME);
+		DimensionDataStorage storage = overworld.getDataStorage();
+		return storage.computeIfAbsent(PaintingWorldData::load, PaintingWorldData::new, DATA_NAME);
 	}
 }

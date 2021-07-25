@@ -1,6 +1,6 @@
 package com.mrbysco.dimpaintings.registry;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
 public class DimensionPaintingType extends ForgeRegistryEntry<DimensionPaintingType> {

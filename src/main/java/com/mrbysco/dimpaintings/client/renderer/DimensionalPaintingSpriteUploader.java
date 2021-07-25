@@ -4,16 +4,16 @@ import com.mrbysco.dimpaintings.DimPaintings;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
 import com.mrbysco.dimpaintings.registry.PaintingTypeRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.SpriteUploader;
+import net.minecraft.client.resources.TextureAtlasHolder;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.IReloadableResourceManager;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.server.packs.resources.ReloadableResourceManager;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.stream.Stream;
 
-public class DimensionalPaintingSpriteUploader extends SpriteUploader {
+public class DimensionalPaintingSpriteUploader extends TextureAtlasHolder {
 	public static final ResourceLocation LOCATION_DIMENSIONAL_TEXTURES = new ResourceLocation(DimPaintings.MOD_ID, "textures/atlas/dimensional_paintings.png");
 	private static final ResourceLocation BACK_SPRITE_LOCATION = new ResourceLocation(DimPaintings.MOD_ID, "back");
 
@@ -37,9 +37,9 @@ public class DimensionalPaintingSpriteUploader extends SpriteUploader {
 
 	public static void initialize() {
 		spriteUploader = new DimensionalPaintingSpriteUploader(Minecraft.getInstance().getTextureManager());
-		IResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
-		if (resourceManager instanceof IReloadableResourceManager) {
-			((IReloadableResourceManager) resourceManager).registerReloadListener(spriteUploader);
+		ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
+		if (resourceManager instanceof ReloadableResourceManager) {
+			((ReloadableResourceManager) resourceManager).registerReloadListener(spriteUploader);
 		}
 	}
 

@@ -1,8 +1,8 @@
 package com.mrbysco.dimpaintings.util;
 
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 
 public class PaintingLocation {
 	public final BlockPos pos;
@@ -22,7 +22,7 @@ public class PaintingLocation {
 		float f = (float)(pos.getX() - newPos.getX());
 		float f1 = (float)(pos.getY() - newPos.getY());
 		float f2 = (float)(pos.getZ() - newPos.getZ());
-		return MathHelper.sqrt(f * f + f1 * f1 + f2 * f2);
+		return Mth.sqrt(f * f + f1 * f1 + f2 * f2);
 	}
 
 	public Direction getDirection() {

@@ -1,17 +1,17 @@
 package com.mrbysco.dimpaintings.util;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.block.PortalInfo;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.World;
-import net.minecraft.world.border.WorldBorder;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.portal.PortalInfo;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.ITeleporter;
 
 import javax.annotation.Nullable;
@@ -23,29 +23,29 @@ import java.util.function.Function;
 public class PaintingTeleporter implements ITeleporter {
 	@Nullable
 	@Override
-	public PortalInfo getPortalInfo(Entity entity, ServerWorld destWorld, Function<ServerWorld, PortalInfo> defaultPortalInfo) {
+	public PortalInfo getPortalInfo(Entity entity, ServerLevel destWorld, Function<ServerLevel, PortalInfo> defaultPortalInfo) {
 		PortalInfo pos;
 
-		pos = placeInExistingPortal(destWorld, entity, dimensionPosition(entity, destWorld), entity instanceof PlayerEntity);
+		pos = placeInExistingPortal(destWorld, entity, dimensionPosition(entity, destWorld), entity instanceof Player);
 
 		return pos;
 	}
 
 	@Nullable
-	private static PortalInfo placeInExistingPortal(ServerWorld destWorld, Entity entity, BlockPos pos, boolean isPlayer) {
+	private static PortalInfo placeInExistingPortal(ServerLevel destWorld, Entity entity, BlockPos pos, boolean isPlayer) {
 		int i = 200;
 		BlockPos blockpos = pos;
-		boolean isFromEnd = entity.level.dimension() == World.END && destWorld.dimension() == World.OVERWORLD;
-		boolean isToEnd = destWorld.dimension() == World.END;
+		boolean isFromEnd = entity.level.dimension() == Level.END && destWorld.dimension() == Level.OVERWORLD;
+		boolean isToEnd = destWorld.dimension() == Level.END;
 
 		if(isFromEnd) {
-			blockpos = destWorld.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, destWorld.getSharedSpawnPos());
-			return new PortalInfo(new Vector3d((double)blockpos.getX() + 0.5D, (double)blockpos.getY(), (double)blockpos.getZ() + 0.5D), entity.getDeltaMovement(), entity.yRot, entity.xRot);
+			blockpos = destWorld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, destWorld.getSharedSpawnPos());
+			return new PortalInfo(new Vec3((double)blockpos.getX() + 0.5D, (double)blockpos.getY(), (double)blockpos.getZ() + 0.5D), entity.getDeltaMovement(), entity.getYRot(), entity.getXRot());
 		} else if(isToEnd) {
-			ServerWorld.makeObsidianPlatform(destWorld);
-			blockpos = ServerWorld.END_SPAWN_POINT;
+			ServerLevel.makeObsidianPlatform(destWorld);
+			blockpos = ServerLevel.END_SPAWN_POINT;
 
-			return new PortalInfo(new Vector3d((double)blockpos.getX() + 0.5D, (double)blockpos.getY(), (double)blockpos.getZ() + 0.5D), entity.getDeltaMovement(), entity.yRot, entity.xRot);
+			return new PortalInfo(new Vec3((double)blockpos.getX() + 0.5D, (double)blockpos.getY(), (double)blockpos.getZ() + 0.5D), entity.getDeltaMovement(), entity.getYRot(), entity.getXRot());
 		} else {
 			PaintingWorldData worldData = PaintingWorldData.get(destWorld);
 			List<PaintingLocation> paintingList = worldData.getDimensionPositions(destWorld.dimension().location());
@@ -78,11 +78,11 @@ public class PaintingTeleporter implements ITeleporter {
 	private static double distanceTo(BlockPos origin, BlockPos paintingPos) {
 		float f = (float)(origin.getX() - paintingPos.getX());
 		float f1 = (float)(origin.getZ() - paintingPos.getZ());
-		return MathHelper.sqrt(f * f + f1 * f1);
+		return Mth.sqrt(f * f + f1 * f1);
 	}
 
 	//Safety stuff
-	private static PortalInfo moveToSafeCoords(ServerWorld world, Entity entity, BlockPos pos, boolean withGlass) {
+	private static PortalInfo moveToSafeCoords(ServerLevel world, Entity entity, BlockPos pos, boolean withGlass) {
 		if (world.isEmptyBlock(pos.below())) {
 			int distance;
 			for(distance = 1; world.getBlockState(pos.below(distance)).getBlock().isPossibleToRespawnInThis(); ++distance) {
@@ -104,7 +104,7 @@ public class PaintingTeleporter implements ITeleporter {
 		return makePortalInfo(entity, pos.getX(), pos.getY(), pos.getZ());
 	}
 
-	private static void makePlatform(ServerWorld world, BlockPos pos, boolean withGlass) {
+	private static void makePlatform(ServerLevel world, BlockPos pos, boolean withGlass) {
 		int i = pos.getX();
 		int j = pos.getY() - 2;
 		int k = pos.getZ();
@@ -127,9 +127,9 @@ public class PaintingTeleporter implements ITeleporter {
 		});
 	}
 
-	private BlockPos dimensionPosition(Entity entity, World destWorld) {
-		boolean flag2 = destWorld.dimension() == World.NETHER;
-		if (entity.level.dimension() != World.NETHER && !flag2) {
+	private BlockPos dimensionPosition(Entity entity, Level destWorld) {
+		boolean flag2 = destWorld.dimension() == Level.NETHER;
+		if (entity.level.dimension() != Level.NETHER && !flag2) {
 			return entity.blockPosition();
 		} else {
 			WorldBorder worldborder = destWorld.getWorldBorder();
@@ -138,25 +138,25 @@ public class PaintingTeleporter implements ITeleporter {
 			double d2 = Math.min(2.9999872E7D, worldborder.getMaxX() - 16.0D);
 			double d3 = Math.min(2.9999872E7D, worldborder.getMaxZ() - 16.0D);
 			double d4 = DimensionType.getTeleportationScale(entity.level.dimensionType(), destWorld.dimensionType());
-			BlockPos blockpos1 = new BlockPos(MathHelper.clamp(entity.getX() * d4, d0, d2), entity.getY(), MathHelper.clamp(entity.getZ() * d4, d1, d3));
+			BlockPos blockpos1 = new BlockPos(Mth.clamp(entity.getX() * d4, d0, d2), entity.getY(), Mth.clamp(entity.getZ() * d4, d1, d3));
 
 			return blockpos1;
 		}
 	}
 
 	private static PortalInfo makePortalInfo(Entity entity, double x, double y, double z) {
-		return makePortalInfo(entity, new Vector3d(x, y, z));
+		return makePortalInfo(entity, new Vec3(x, y, z));
 	}
 
-	private static PortalInfo makePortalInfo(Entity entity, Vector3d pos) {
-		return new PortalInfo(pos, Vector3d.ZERO, entity.yRot, entity.xRot);
+	private static PortalInfo makePortalInfo(Entity entity, Vec3 pos) {
+		return new PortalInfo(pos, Vec3.ZERO, entity.getYRot(), entity.getXRot());
 	}
 
-	public PaintingTeleporter(ServerWorld worldIn) {
+	public PaintingTeleporter(ServerLevel worldIn) {
 	}
 
 	@Override
-	public Entity placeEntity(Entity newEntity, ServerWorld currentWorld, ServerWorld destWorld, float yaw, Function<Boolean, Entity> repositionEntity) {
+	public Entity placeEntity(Entity newEntity, ServerLevel currentWorld, ServerLevel destWorld, float yaw, Function<Boolean, Entity> repositionEntity) {
 		newEntity.fallDistance = 0;
 		return repositionEntity.apply(false); //Must be false or we fall on vanilla
 	}

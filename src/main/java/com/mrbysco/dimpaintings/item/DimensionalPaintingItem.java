@@ -1,17 +1,17 @@
 package com.mrbysco.dimpaintings.item;
 
-import com.mrbysco.dimpaintings.entity.DimensionalPaintingEntity;
+import com.mrbysco.dimpaintings.entity.DimensionalPainting;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 
 import java.util.function.Supplier;
 
@@ -23,40 +23,40 @@ public class DimensionalPaintingItem extends Item {
 		this.paintingDimensionSupplier = paintingDimension;
 	}
 
-	public ActionResultType useOn(ItemUseContext useContext) {
-		BlockPos blockpos = useContext.getClickedPos();
+	public InteractionResult useOn(UseOnContext useContext) {
+		BlockPos pos = useContext.getClickedPos();
 		Direction direction = useContext.getClickedFace();
-		BlockPos blockpos1 = blockpos.relative(direction);
-		PlayerEntity playerentity = useContext.getPlayer();
-		ItemStack itemstack = useContext.getItemInHand();
-		if (playerentity != null && !this.mayPlace(playerentity, direction, itemstack, blockpos1)) {
-			return ActionResultType.FAIL;
+		BlockPos relativePos = pos.relative(direction);
+		Player player = useContext.getPlayer();
+		ItemStack stack = useContext.getItemInHand();
+		if (player != null && !this.mayPlace(player, direction, stack, relativePos)) {
+			return InteractionResult.FAIL;
 		} else {
-			World world = useContext.getLevel();
-			DimensionalPaintingEntity hangingentity = new DimensionalPaintingEntity(world, blockpos1, direction, paintingDimensionSupplier.get());
-			hangingentity.setItem(itemstack);
+			Level level = useContext.getLevel();
+			DimensionalPainting dimensionalPainting = new DimensionalPainting(level, relativePos, direction, paintingDimensionSupplier.get());
+			dimensionalPainting.setItem(stack);
 
-			CompoundNBT compoundnbt = itemstack.getTag();
-			if (compoundnbt != null) {
-				EntityType.updateCustomEntityTag(world, playerentity, hangingentity, compoundnbt);
+			CompoundTag tag = stack.getTag();
+			if (tag != null) {
+				EntityType.updateCustomEntityTag(level, player, dimensionalPainting, tag);
 			}
 
-			if (hangingentity.survives()) {
-				if (!world.isClientSide) {
-					hangingentity.playPlacementSound();
-					world.addFreshEntity(hangingentity);
+			if (dimensionalPainting.survives()) {
+				if (!level.isClientSide) {
+					dimensionalPainting.playPlacementSound();
+					level.addFreshEntity(dimensionalPainting);
 
-					itemstack.shrink(1);
+					stack.shrink(1);
 				}
 
-				return ActionResultType.sidedSuccess(world.isClientSide);
+				return InteractionResult.sidedSuccess(level.isClientSide);
 			} else {
-				return ActionResultType.CONSUME;
+				return InteractionResult.CONSUME;
 			}
 		}
 	}
 
-	protected boolean mayPlace(PlayerEntity playerEntity, Direction direction, ItemStack stack, BlockPos blockPos) {
-		return !direction.getAxis().isVertical() && playerEntity.mayUseItemAt(blockPos, direction, stack);
+	protected boolean mayPlace(Player player, Direction direction, ItemStack stack, BlockPos pos) {
+		return !direction.getAxis().isVertical() && player.mayUseItemAt(pos, direction, stack);
 	}
 }
