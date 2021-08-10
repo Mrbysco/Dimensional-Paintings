@@ -1,4 +1,4 @@
-[![build](https://github.com/Mrbysco/Dimensional-Paintings/actions/workflows/build.yml/badge.svg)](https://github.com/Mrbysco/Dimensional-Paintings/actions/workflows/build.yml) [![](http://cf.way2muchnoise.eu/versions/480500_latest.svg)](https://minecraft.curseforge.com/projects/dimensional-paintings)
+[![build](https://github.com/Mrbysco/Dimensional-Paintings/actions/workflows/build.yml/badge.svg)](https://github.com/Mrbysco/Dimensional-Paintings/actions/workflows/build.yml) [![](http://cf.way2muchnoise.eu/versions/480500_latest.svg)](https://www.curseforge.com/minecraft/mc-mods/dimensional-paintings)
 # Dimensional Paintings #
 
 ## About ##
