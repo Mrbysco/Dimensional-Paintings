@@ -139,12 +139,14 @@ public class PaintingTeleporter implements ITeleporter {
 				makePlatform(world, pos, withGlass);
 			}
 		} else {
-			if(world.getBlockState(pos.above()).getBlock().isPossibleToRespawnInThis() && world.getBlockState(pos.above(1)).getBlock().isPossibleToRespawnInThis()) {
-				BlockPos abovePos = pos.above(1);
+			BlockPos abovePos = pos.above(1);
+			if(!world.getBlockState(pos.below()).getMaterial().isLiquid() && world.getBlockState(pos.above()).getBlock().isPossibleToRespawnInThis() &&
+					world.getBlockState(abovePos).getBlock().isPossibleToRespawnInThis()) {
 				return makePortalInfo(entity, abovePos.getX() + 0.5D, abovePos.getY(), abovePos.getZ() + 0.5D);
 			}
 			if(!world.isEmptyBlock(pos.below()) || !world.isEmptyBlock(pos)) {
-				makePlatform(world, pos, withGlass);
+				makePlatform(world, abovePos, withGlass);
+				return makePortalInfo(entity, abovePos.getX(), abovePos.getY(), abovePos.getZ());
 			}
 		}
 
