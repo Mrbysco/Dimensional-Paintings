@@ -20,7 +20,7 @@ public class DimPaintings {
 
     public DimPaintings() {
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, DimensionalConfig.serverSpec);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, DimensionalConfig.serverSpec);
         eventBus.register(DimensionalConfig.class);
 
         PaintingRegistry.ENTITIES.register(eventBus);
