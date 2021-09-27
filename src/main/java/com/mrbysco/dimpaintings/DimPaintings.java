@@ -2,8 +2,10 @@ package com.mrbysco.dimpaintings;
 
 import com.mrbysco.dimpaintings.client.ClientHandler;
 import com.mrbysco.dimpaintings.config.DimensionalConfig;
+import com.mrbysco.dimpaintings.handler.CooldownHandler;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -26,6 +28,8 @@ public class DimPaintings {
         PaintingRegistry.ENTITIES.register(eventBus);
         PaintingRegistry.DIM_PAINTINGS.register(eventBus);
         PaintingRegistry.ITEMS.register(eventBus);
+
+        MinecraftForge.EVENT_BUS.register(new CooldownHandler());
 
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             eventBus.addListener(ClientHandler::registerItemColors);

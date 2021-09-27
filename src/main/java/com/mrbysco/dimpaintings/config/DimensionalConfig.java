@@ -12,6 +12,7 @@ public class DimensionalConfig {
 	public static class Common {
 		public final BooleanValue overworldToBed;
 		public final IntValue netherMaxY;
+		public final IntValue teleportCooldown;
 
 		Common(ForgeConfigSpec.Builder builder) {
 			builder.comment("General settings")
@@ -24,6 +25,10 @@ public class DimensionalConfig {
 			netherMaxY = builder
 					.comment("Dictates the max Y at which the Nether Painting will place you in the Nether [51 = Spawn in a bubble at Y 50 if nothing] (Default: 120)")
 					.defineInRange("netherMaxY", 120, 10, 120);
+
+			teleportCooldown = builder
+					.comment("Amount of seconds between being able to teleport (Default: 4)")
+					.defineInRange("teleportCooldown", 4, 0, Integer.MAX_VALUE);
 
 			builder.pop();
 		}

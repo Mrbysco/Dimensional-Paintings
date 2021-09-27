@@ -1,5 +1,6 @@
 package com.mrbysco.dimpaintings.entity;
 
+import com.mrbysco.dimpaintings.config.DimensionalConfig;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
 import com.mrbysco.dimpaintings.registry.PaintingTypeRegistry;
@@ -29,6 +30,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -164,8 +167,16 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 		if(!level.isClientSide) {
 			boolean flag = player.distanceTo(this) < 1 && !player.isOnGround();
 			if(flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canChangeDimensions()) {
-				player.teleportTo((int)this.getX(), (int)this.getY(), (int)this.getZ());
-				TeleportHelper.teleportToGivenDimension(player, this.dimensionType.getDimensionLocation());
+				boolean cooldownFlag = DimensionalConfig.COMMON.teleportCooldown.get() == 0;
+				if(cooldownFlag || !player.getPersistentData().contains("PaintingCooldown")) {
+					if(!cooldownFlag) {
+						player.getPersistentData().putInt("PaintingCooldown", DimensionalConfig.COMMON.teleportCooldown.get());
+					}
+					player.teleportTo((int)this.getX(), (int)this.getY(), (int)this.getZ());
+					TeleportHelper.teleportToGivenDimension(player, this.dimensionType.getDimensionLocation());
+				} else {
+					player.displayClientMessage(new TranslationTextComponent("dimpaintings.cooldown").withStyle(TextFormatting.GOLD), true);
+				}
 				return;
 			}
 		}
