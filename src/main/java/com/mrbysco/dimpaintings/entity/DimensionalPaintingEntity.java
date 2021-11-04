@@ -99,7 +99,7 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 		if (this.isInvulnerableTo(damageSource)) {
 			return false;
 		} else {
-			if (!this.removed && !this.level.isClientSide) {
+			if (isAlive() && !this.level.isClientSide) {
 				removeStoredPosition();
 				this.remove();
 				this.markHurt();
@@ -111,7 +111,7 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	}
 
 	public void move(MoverType type, Vector3d position) {
-		if (!this.level.isClientSide && !this.removed && position.lengthSqr() > 0.0D) {
+		if (!this.level.isClientSide && isAlive() && position.lengthSqr() > 0.0D) {
 			removeStoredPosition();
 			this.remove();
 			this.dropItem((Entity)null);
@@ -120,7 +120,7 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	}
 
 	public void push(double posX, double posY, double posZ) {
-		if (!this.level.isClientSide && !this.removed && posX * posX + posY * posY + posZ * posZ > 0.0D) {
+		if (!this.level.isClientSide && isAlive() && posX * posX + posY * posY + posZ * posZ > 0.0D) {
 			removeStoredPosition();
 			this.remove();
 			this.dropItem((Entity)null);
@@ -143,7 +143,7 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	public void tick() {
 		super.tick();
 
-		if(!level.isClientSide) {
+		if(!level.isClientSide && isAlive()) {
 			List<Entity> nearbyEntities = this.level.getEntitiesOfClass(Entity.class, getBoundingBox());
 			if(!nearbyEntities.isEmpty()) {
 				for (Iterator<Entity> iterator = nearbyEntities.iterator(); iterator.hasNext(); ) {
@@ -164,7 +164,7 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	@Override
 	public void playerTouch(PlayerEntity player) {
 		super.playerTouch(player);
-		if(!level.isClientSide) {
+		if(!level.isClientSide && isAlive()) {
 			boolean flag = player.distanceTo(this) < 1 && !player.isOnGround();
 			if(flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canChangeDimensions()) {
 				boolean cooldownFlag = DimensionalConfig.COMMON.teleportCooldown.get() == 0;

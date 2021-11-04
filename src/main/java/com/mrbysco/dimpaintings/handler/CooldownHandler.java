@@ -21,7 +21,7 @@ public class CooldownHandler {
 				if(currentCooldown == 0) {
 					persistentData.remove("PaintingCooldown");
 				} else {
-					persistentData.putInt("PaintingCooldown", currentCooldown--);
+					persistentData.putInt("PaintingCooldown", currentCooldown);
 				}
 			}
 		}
