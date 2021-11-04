@@ -1,12 +1,20 @@
 package com.mrbysco.dimpaintings.util;
 
+import com.mrbysco.dimpaintings.config.DimensionalConfig;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -18,6 +26,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 public class PaintingTeleporter implements ITeleporter {
@@ -35,12 +44,50 @@ public class PaintingTeleporter implements ITeleporter {
 	private static PortalInfo placeInExistingPortal(ServerLevel destWorld, Entity entity, BlockPos pos, boolean isPlayer) {
 		int i = 200;
 		BlockPos blockpos = pos;
-		boolean isFromEnd = entity.level.dimension() == Level.END && destWorld.dimension() == Level.OVERWORLD;
+		boolean isToOverworld = destWorld.dimension() == Level.OVERWORLD;
+		boolean isFromEnd = entity.level.dimension() == Level.END && isToOverworld;
 		boolean isToEnd = destWorld.dimension() == Level.END;
 
-		if(isFromEnd) {
+		if(isFromEnd || (isToOverworld && DimensionalConfig.COMMON.overworldToBed.get())) {
 			blockpos = destWorld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, destWorld.getSharedSpawnPos());
-			return new PortalInfo(new Vec3((double)blockpos.getX() + 0.5D, (double)blockpos.getY(), (double)blockpos.getZ() + 0.5D), entity.getDeltaMovement(), entity.getYRot(), entity.getXRot());
+			float angle = entity.getXRot();
+
+			if(isPlayer && entity instanceof ServerPlayer) {
+				ServerPlayer serverPlayer = (ServerPlayer) entity;
+				BlockPos respawnPos = serverPlayer.getRespawnPosition();
+				float respawnAngle = serverPlayer.getRespawnAngle();
+				Optional<Vec3> optional;
+				if (serverPlayer != null && respawnPos != null) {
+					optional = Player.findRespawnPositionAndUseSpawnBlock(destWorld, respawnPos, respawnAngle, false, false);
+				} else {
+					optional = Optional.empty();
+				}
+
+				boolean flag2 = false;
+				if (optional.isPresent()) {
+					BlockState blockstate = destWorld.getBlockState(respawnPos);
+					boolean flag1 = blockstate.is(Blocks.RESPAWN_ANCHOR);
+					Vec3 vector3d = optional.get();
+					float f1;
+					if (!blockstate.is(BlockTags.BEDS) && !flag1) {
+						f1 = respawnAngle;
+					} else {
+						Vec3 vector3d1 = Vec3.atBottomCenterOf(respawnPos).subtract(vector3d).normalize();
+						f1 = (float)Mth.wrapDegrees(Mth.atan2(vector3d1.z, vector3d1.x) * (double)(180F / (float)Math.PI) - 90.0D);
+					}
+					angle = f1;
+					blockpos = new BlockPos(vector3d.x, vector3d.y, vector3d.z);
+
+					flag2 = flag1;
+				} else if (blockpos != null) {
+					serverPlayer.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.NO_RESPAWN_BLOCK_AVAILABLE, 0.0F));
+				}
+
+				if (flag2) {
+					serverPlayer.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double)respawnPos.getX(), (double)respawnPos.getY(), (double)respawnPos.getZ(), 1.0F, 1.0F));
+				}
+			}
+			return new PortalInfo(new Vec3((double)blockpos.getX() + 0.5D, (double)blockpos.getY(), (double)blockpos.getZ() + 0.5D), entity.getDeltaMovement(), angle, entity.getXRot());
 		} else if(isToEnd) {
 			ServerLevel.makeObsidianPlatform(destWorld);
 			blockpos = ServerLevel.END_SPAWN_POINT;
@@ -92,12 +139,14 @@ public class PaintingTeleporter implements ITeleporter {
 				makePlatform(world, pos, withGlass);
 			}
 		} else {
-			if(!world.getBlockState(pos).getBlock().isPossibleToRespawnInThis() && world.getBlockState(pos.above()).getBlock().isPossibleToRespawnInThis() && world.getBlockState(pos.above(2)).getBlock().isPossibleToRespawnInThis()) {
-				BlockPos abovePos = pos.above(2);
-				return makePortalInfo(entity, abovePos.getX(), abovePos.getY(), abovePos.getZ());
+			BlockPos abovePos = pos.above(1);
+			if(!world.getBlockState(pos.below()).getMaterial().isLiquid() && world.getBlockState(pos.above()).getBlock().isPossibleToRespawnInThis() &&
+					world.getBlockState(abovePos).getBlock().isPossibleToRespawnInThis()) {
+				return makePortalInfo(entity, abovePos.getX() + 0.5D, abovePos.getY(), abovePos.getZ() + 0.5D);
 			}
 			if(!world.isEmptyBlock(pos.below()) || !world.isEmptyBlock(pos)) {
-				makePlatform(world, pos, withGlass);
+				makePlatform(world, abovePos, withGlass);
+				return makePortalInfo(entity, abovePos.getX(), abovePos.getY(), abovePos.getZ());
 			}
 		}
 
@@ -138,9 +187,8 @@ public class PaintingTeleporter implements ITeleporter {
 			double d2 = Math.min(2.9999872E7D, worldborder.getMaxX() - 16.0D);
 			double d3 = Math.min(2.9999872E7D, worldborder.getMaxZ() - 16.0D);
 			double d4 = DimensionType.getTeleportationScale(entity.level.dimensionType(), destWorld.dimensionType());
-			BlockPos blockpos1 = new BlockPos(Mth.clamp(entity.getX() * d4, d0, d2), entity.getY(), Mth.clamp(entity.getZ() * d4, d1, d3));
-
-			return blockpos1;
+			int maxY = DimensionalConfig.COMMON.netherMaxY.get();
+			return new BlockPos(Mth.clamp(entity.getX() * d4, d0, d2), Mth.clamp(entity.getY(), 2, maxY), Mth.clamp(entity.getZ() * d4, d1, d3));
 		}
 	}
 

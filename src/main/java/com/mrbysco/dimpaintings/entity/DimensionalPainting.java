@@ -1,15 +1,18 @@
 package com.mrbysco.dimpaintings.entity;
 
+import com.mrbysco.dimpaintings.config.DimensionalConfig;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
 import com.mrbysco.dimpaintings.registry.PaintingTypeRegistry;
 import com.mrbysco.dimpaintings.util.PaintingWorldData;
 import com.mrbysco.dimpaintings.util.TeleportHelper;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -88,7 +91,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 
 	@Override
 	protected void removeAfterChangingDimensions() {
-//		this.removed = false;
+		this.unsetRemoved();
 	}
 
 	@Override
@@ -96,8 +99,8 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 		if (this.isInvulnerableTo(damageSource)) {
 			return false;
 		} else {
-			if (!this.isRemoved() && !this.level.isClientSide) {
-				removeStoredPosition();
+			if (isAlive() && !this.level.isClientSide) {
+				this.removeStoredPosition();
 				this.kill();
 				this.markHurt();
 				this.dropItem(damageSource.getEntity());
@@ -108,8 +111,8 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public void move(MoverType type, Vec3 position) {
-		if (!this.level.isClientSide && !this.isRemoved() && position.lengthSqr() > 0.0D) {
-			removeStoredPosition();
+		if (!this.level.isClientSide && isAlive() && position.lengthSqr() > 0.0D) {
+			this.removeStoredPosition();
 			this.kill();
 			this.dropItem((Entity)null);
 		}
@@ -117,8 +120,8 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public void push(double posX, double posY, double posZ) {
-		if (!this.level.isClientSide && !this.isRemoved() && posX * posX + posY * posY + posZ * posZ > 0.0D) {
-			removeStoredPosition();
+		if (!this.level.isClientSide && isAlive() && posX * posX + posY * posY + posZ * posZ > 0.0D) {
+			this.removeStoredPosition();
 			this.kill();
 			this.dropItem((Entity)null);
 		}
@@ -140,7 +143,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	public void tick() {
 		super.tick();
 
-		if(!level.isClientSide) {
+		if(!level.isClientSide && isAlive()) {
 			List<Entity> nearbyEntities = this.level.getEntitiesOfClass(Entity.class, getBoundingBox());
 			if(!nearbyEntities.isEmpty()) {
 				for (Iterator<Entity> iterator = nearbyEntities.iterator(); iterator.hasNext(); ) {
@@ -161,12 +164,19 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	@Override
 	public void playerTouch(Player player) {
 		super.playerTouch(player);
-		if(!level.isClientSide) {
+		if(!level.isClientSide && isAlive()) {
 			boolean flag = player.distanceTo(this) < 1 && !player.isOnGround();
 			if(flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canChangeDimensions()) {
-				player.teleportTo((int)this.getX(), (int)this.getY(), (int)this.getZ());
-				TeleportHelper.teleportToGivenDimension(player, this.dimensionType.getDimensionLocation());
-				return;
+				boolean cooldownFlag = DimensionalConfig.COMMON.teleportCooldown.get() == 0;
+				if(cooldownFlag || !player.getPersistentData().contains("PaintingCooldown")) {
+					if(!cooldownFlag) {
+						player.getPersistentData().putInt("PaintingCooldown", DimensionalConfig.COMMON.teleportCooldown.get());
+					}
+					player.teleportTo((int)this.getX(), (int)this.getY(), (int)this.getZ());
+					TeleportHelper.teleportToGivenDimension(player, this.dimensionType.getDimensionLocation());
+				} else {
+					player.displayClientMessage(new TranslatableComponent("dimpaintings.cooldown").withStyle(ChatFormatting.GOLD), true);
+				}
 			}
 		}
 	}
