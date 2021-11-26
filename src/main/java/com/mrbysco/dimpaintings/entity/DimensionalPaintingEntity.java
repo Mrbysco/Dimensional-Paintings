@@ -149,11 +149,15 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 				for (Iterator<Entity> iterator = nearbyEntities.iterator(); iterator.hasNext(); ) {
 					Entity entityIn = iterator.next();
 					if(entityIn != this && !(entityIn instanceof FakePlayer) && !(entityIn instanceof PlayerEntity)) {
-						boolean flag = entityIn.distanceTo(this) < 1 && !entityIn.isOnGround();
-						if(flag && !entityIn.isPassenger() && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canChangeDimensions()) {
-							entityIn.teleportTo((int)this.getX(), (int)this.getY(), (int)this.getZ());
-							TeleportHelper.teleportToGivenDimension(entityIn, this.dimensionType.getDimensionLocation());
-							return;
+						ResourceLocation paintingLocation = this.dimensionType.getDimensionLocation();
+						ResourceLocation currentLocation = entityIn.level.dimension().location();
+						if(!currentLocation.equals(paintingLocation)) {
+							boolean flag = entityIn.distanceTo(this) < 1 && !entityIn.isOnGround();
+							if(flag && !entityIn.isPassenger() && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canChangeDimensions()) {
+								entityIn.teleportTo((int)this.getX(), (int)this.getY(), (int)this.getZ());
+								TeleportHelper.teleportToGivenDimension(entityIn, paintingLocation);
+								return;
+							}
 						}
 					}
 				}
@@ -165,19 +169,25 @@ public class DimensionalPaintingEntity extends HangingEntity implements IEntityA
 	public void playerTouch(PlayerEntity player) {
 		super.playerTouch(player);
 		if(!level.isClientSide && isAlive()) {
-			boolean flag = player.distanceTo(this) < 1 && !player.isOnGround();
-			if(flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canChangeDimensions()) {
-				boolean cooldownFlag = DimensionalConfig.COMMON.teleportCooldown.get() == 0;
-				if(cooldownFlag || !player.getPersistentData().contains("PaintingCooldown")) {
-					if(!cooldownFlag) {
-						player.getPersistentData().putInt("PaintingCooldown", DimensionalConfig.COMMON.teleportCooldown.get());
+			ResourceLocation paintingLocation = this.dimensionType.getDimensionLocation();
+			ResourceLocation currentLocation = player.level.dimension().location();
+			if(!currentLocation.equals(paintingLocation)) {
+				boolean flag = player.distanceTo(this) < 1 && !player.isOnGround();
+				if(flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canChangeDimensions()) {
+					boolean cooldownFlag = DimensionalConfig.COMMON.teleportCooldown.get() == 0;
+					if(cooldownFlag || !player.getPersistentData().contains("PaintingCooldown")) {
+						if(!cooldownFlag) {
+							player.getPersistentData().putInt("PaintingCooldown", DimensionalConfig.COMMON.teleportCooldown.get());
+						}
+						player.teleportTo((int)this.getX(), (int)this.getY(), (int)this.getZ());
+						TeleportHelper.teleportToGivenDimension(player, paintingLocation);
+					} else {
+						player.displayClientMessage(new TranslationTextComponent("dimpaintings.cooldown").withStyle(TextFormatting.GOLD), true);
 					}
-					player.teleportTo((int)this.getX(), (int)this.getY(), (int)this.getZ());
-					TeleportHelper.teleportToGivenDimension(player, this.dimensionType.getDimensionLocation());
-				} else {
-					player.displayClientMessage(new TranslationTextComponent("dimpaintings.cooldown").withStyle(TextFormatting.GOLD), true);
+					return;
 				}
-				return;
+			} else {
+				player.displayClientMessage(new TranslationTextComponent("dimpaintings.same_dimension").withStyle(TextFormatting.RED), true);
 			}
 		}
 	}
