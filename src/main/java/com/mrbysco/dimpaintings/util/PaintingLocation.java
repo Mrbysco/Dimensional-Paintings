@@ -1,7 +1,7 @@
 package com.mrbysco.dimpaintings.util;
 
-import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 
 public class PaintingLocation {

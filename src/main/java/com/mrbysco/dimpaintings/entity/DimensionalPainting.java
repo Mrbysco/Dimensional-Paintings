@@ -38,9 +38,9 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.fmllegacy.common.registry.IEntityAdditionalSpawnData;
-import net.minecraftforge.fmllegacy.network.FMLPlayMessages;
-import net.minecraftforge.fmllegacy.network.NetworkHooks;
+import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.network.NetworkHooks;
+import net.minecraftforge.network.PlayMessages.SpawnEntity;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -67,7 +67,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 		}
 	}
 
-	public DimensionalPainting(FMLPlayMessages.SpawnEntity spawnEntity, Level worldIn) {
+	public DimensionalPainting(SpawnEntity spawnEntity, Level worldIn) {
 		this(worldIn, new BlockPos((int)spawnEntity.getPosX(), (int)spawnEntity.getPosY(), (int)spawnEntity.getPosZ()),
 				Direction.from2DDataValue(spawnEntity.getAdditionalData().readByte()),
 				PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getValue(ResourceLocation.tryParse(spawnEntity.getAdditionalData().readUtf())));

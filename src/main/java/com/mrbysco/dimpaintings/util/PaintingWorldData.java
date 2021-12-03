@@ -13,7 +13,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
-import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,7 @@ public class PaintingWorldData extends SavedData {
 			if(tag.getTagType(nbtName) == 9) {
 				Tag nbt = tag.get(nbtName);
 				if(nbt instanceof ListTag listNBT) {
-					if (!listNBT.isEmpty() && listNBT.getElementType() != Constants.NBT.TAG_COMPOUND) {
+					if (!listNBT.isEmpty() && listNBT.getElementType() != CompoundTag.TAG_COMPOUND) {
 						continue;
 					}
 

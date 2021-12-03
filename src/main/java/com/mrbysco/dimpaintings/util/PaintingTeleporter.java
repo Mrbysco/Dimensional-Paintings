@@ -52,8 +52,7 @@ public class PaintingTeleporter implements ITeleporter {
 			blockpos = destWorld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, destWorld.getSharedSpawnPos());
 			float angle = entity.getXRot();
 
-			if(isPlayer && entity instanceof ServerPlayer) {
-				ServerPlayer serverPlayer = (ServerPlayer) entity;
+			if(isPlayer && entity instanceof ServerPlayer serverPlayer) {
 				BlockPos respawnPos = serverPlayer.getRespawnPosition();
 				float respawnAngle = serverPlayer.getRespawnAngle();
 				Optional<Vec3> optional;
@@ -209,14 +208,7 @@ public class PaintingTeleporter implements ITeleporter {
 		return repositionEntity.apply(false); //Must be false or we fall on vanilla
 	}
 
-	static class ClosestPosition implements Comparable<ClosestPosition> {
-		private final int distance;
-		private final BlockPos pos;
-
-		ClosestPosition(int distance, BlockPos pos) {
-			this.distance = distance;
-			this.pos = pos;
-		}
+	record ClosestPosition(int distance, BlockPos pos) implements Comparable<ClosestPosition> {
 
 		public int getDistance() {
 			return distance;
