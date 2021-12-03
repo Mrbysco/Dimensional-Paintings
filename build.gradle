@@ -85,10 +85,10 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-    maven {
-        name 'JEI maven'
-        url = "https://dvs1.progwml6.com/files/maven"
-    }
+//    maven {
+//        name 'JEI maven'
+//        url = "https://dvs1.progwml6.com/files/maven"
+//    }
 }
 
 dependencies {
