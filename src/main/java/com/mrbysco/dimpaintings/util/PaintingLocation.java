@@ -19,9 +19,9 @@ public class PaintingLocation {
 	}
 
 	public double distanceTo(BlockPos newPos) {
-		float f = (float)(pos.getX() - newPos.getX());
-		float f1 = (float)(pos.getY() - newPos.getY());
-		float f2 = (float)(pos.getZ() - newPos.getZ());
+		float f = (float) (pos.getX() - newPos.getX());
+		float f1 = (float) (pos.getY() - newPos.getY());
+		float f2 = (float) (pos.getZ() - newPos.getZ());
 		return Mth.sqrt(f * f + f1 * f1 + f2 * f2);
 	}
 

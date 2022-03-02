@@ -60,7 +60,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 		this.setDimensionType(paintingType);
 		this.setDirection(direction);
 
-		if(!level.isClientSide) {
+		if (!level.isClientSide) {
 			ServerLevel serverWorld = (ServerLevel) world;
 			PaintingWorldData worldData = PaintingWorldData.get(serverWorld);
 			worldData.addPositionToDimension(world.dimension().location(), getPos(), getDirection());
@@ -68,13 +68,13 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public DimensionalPainting(SpawnEntity spawnEntity, Level worldIn) {
-		this(worldIn, new BlockPos((int)spawnEntity.getPosX(), (int)spawnEntity.getPosY(), (int)spawnEntity.getPosZ()),
+		this(worldIn, new BlockPos((int) spawnEntity.getPosX(), (int) spawnEntity.getPosY(), (int) spawnEntity.getPosZ()),
 				Direction.from2DDataValue(spawnEntity.getAdditionalData().readByte()),
 				PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getValue(ResourceLocation.tryParse(spawnEntity.getAdditionalData().readUtf())));
 
 		FriendlyByteBuf additionalData = spawnEntity.getAdditionalData();
 		Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
-		if(item != null) {
+		if (item != null) {
 			this.setItem(new ItemStack(item));
 		}
 	}
@@ -114,7 +114,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 		if (!this.level.isClientSide && isAlive() && position.lengthSqr() > 0.0D) {
 			this.removeStoredPosition();
 			this.kill();
-			this.dropItem((Entity)null);
+			this.dropItem((Entity) null);
 		}
 
 	}
@@ -123,7 +123,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 		if (!this.level.isClientSide && isAlive() && posX * posX + posY * posY + posZ * posZ > 0.0D) {
 			this.removeStoredPosition();
 			this.kill();
-			this.dropItem((Entity)null);
+			this.dropItem((Entity) null);
 		}
 
 	}
@@ -143,15 +143,15 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	public void tick() {
 		super.tick();
 
-		if(!level.isClientSide && isAlive()) {
+		if (!level.isClientSide && isAlive()) {
 			List<Entity> nearbyEntities = this.level.getEntitiesOfClass(Entity.class, getBoundingBox());
-			if(!nearbyEntities.isEmpty()) {
+			if (!nearbyEntities.isEmpty()) {
 				for (Iterator<Entity> iterator = nearbyEntities.iterator(); iterator.hasNext(); ) {
 					Entity entityIn = iterator.next();
-					if(entityIn != this && !(entityIn instanceof FakePlayer) && !(entityIn instanceof Player)) {
+					if (entityIn != this && !(entityIn instanceof FakePlayer) && !(entityIn instanceof Player)) {
 						boolean flag = entityIn.distanceTo(this) < 1 && !entityIn.isOnGround();
-						if(flag && !entityIn.isPassenger() && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canChangeDimensions()) {
-							entityIn.teleportTo((int)this.getX(), (int)this.getY(), (int)this.getZ());
+						if (flag && !entityIn.isPassenger() && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canChangeDimensions()) {
+							entityIn.teleportTo((int) this.getX(), (int) this.getY(), (int) this.getZ());
 							TeleportHelper.teleportToGivenDimension(entityIn, this.dimensionType.getDimensionLocation());
 							return;
 						}
@@ -164,15 +164,15 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	@Override
 	public void playerTouch(Player player) {
 		super.playerTouch(player);
-		if(!level.isClientSide && isAlive()) {
+		if (!level.isClientSide && isAlive()) {
 			boolean flag = player.distanceTo(this) < 1 && !player.isOnGround();
-			if(flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canChangeDimensions()) {
+			if (flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canChangeDimensions()) {
 				boolean cooldownFlag = DimensionalConfig.COMMON.teleportCooldown.get() == 0;
-				if(cooldownFlag || !player.getPersistentData().contains("PaintingCooldown")) {
-					if(!cooldownFlag) {
+				if (cooldownFlag || !player.getPersistentData().contains("PaintingCooldown")) {
+					if (!cooldownFlag) {
 						player.getPersistentData().putInt("PaintingCooldown", DimensionalConfig.COMMON.teleportCooldown.get());
 					}
-					player.teleportTo((int)this.getX(), (int)this.getY(), (int)this.getZ());
+					player.teleportTo((int) this.getX(), (int) this.getY(), (int) this.getZ());
 					TeleportHelper.teleportToGivenDimension(player, this.dimensionType.getDimensionLocation());
 				} else {
 					player.displayClientMessage(new TranslatableComponent("dimpaintings.cooldown").withStyle(ChatFormatting.GOLD), true);
@@ -195,7 +195,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 
 	public void addAdditionalSaveData(CompoundTag compoundNBT) {
 		compoundNBT.putString("Dimension", PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(this.dimensionType).toString());
-		compoundNBT.putByte("Facing", (byte)this.direction.get2DDataValue());
+		compoundNBT.putByte("Facing", (byte) this.direction.get2DDataValue());
 		ItemStack itemstack = this.getItemRaw();
 		if (!itemstack.isEmpty()) {
 			compoundNBT.put("Item", itemstack.save(new CompoundTag()));
@@ -265,52 +265,53 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	@OnlyIn(Dist.CLIENT)
 	public void lerpTo(double xOffset, double yOffset, double zOffset, float unused1, float unused2, int unused3, boolean flag) {
 		BlockPos blockpos = this.pos.offset(xOffset - this.getX(), yOffset - this.getY(), zOffset - this.getZ());
-		this.setPos((double)blockpos.getX(), (double)blockpos.getY(), (double)blockpos.getZ());
+		this.setPos((double) blockpos.getX(), (double) blockpos.getY(), (double) blockpos.getZ());
 	}
 
 	@Override
 	public void writeSpawnData(FriendlyByteBuf buffer) {
-		buffer.writeByte((byte)this.direction.get2DDataValue());
+		buffer.writeByte((byte) this.direction.get2DDataValue());
 		buffer.writeUtf(this.dimensionType.getRegistryName().toString());
 		buffer.writeUtf(getItem().getItem().getRegistryName().toString());
 	}
 
 	@Override
-	public void readSpawnData(FriendlyByteBuf additionalData) { }
+	public void readSpawnData(FriendlyByteBuf additionalData) {
+	}
 
 	@Override
 	protected void recalculateBoundingBox() {
 		if (this.direction != null) {
-			if(level.isClientSide) {
-				if(tickCount == 0) {
-					if(direction == Direction.NORTH)
+			if (level.isClientSide) {
+				if (tickCount == 0) {
+					if (direction == Direction.NORTH)
 						this.pos = this.pos.offset(0, -0.5D, 0);
-					if(direction == Direction.EAST)
+					if (direction == Direction.EAST)
 						this.pos = this.pos.offset(0, -0.5D, 0);
-					if(direction == Direction.SOUTH)
+					if (direction == Direction.SOUTH)
 						this.pos = this.pos.offset(-0.5D, -0.5D, 0);
-					if(direction == Direction.WEST)
+					if (direction == Direction.WEST)
 						this.pos = this.pos.offset(0, -0.5D, -0.5D);
 				}
 			}
 
-			double posX = (double)this.pos.getX() + 0.5D;
-			double posY = (double)this.pos.getY() + 0.5D;
-			double posZ = (double)this.pos.getZ() + 0.5D;
+			double posX = (double) this.pos.getX() + 0.5D;
+			double posY = (double) this.pos.getY() + 0.5D;
+			double posZ = (double) this.pos.getZ() + 0.5D;
 
 			double d3 = 0.46875D;
 			double offWidth = this.offs(this.getWidth());
 			double offHeight = this.offs(this.getHeight());
-			posX = posX - (double)this.direction.getStepX() * d3;
-			posZ = posZ - (double)this.direction.getStepZ() * d3;
+			posX = posX - (double) this.direction.getStepX() * d3;
+			posZ = posZ - (double) this.direction.getStepZ() * d3;
 			posY = posY + offHeight;
 			Direction direction = this.direction.getCounterClockWise();
-			posX = posX + offWidth * (double)direction.getStepX();
-			posZ = posZ + offWidth * (double)direction.getStepZ();
+			posX = posX + offWidth * (double) direction.getStepX();
+			posZ = posZ + offWidth * (double) direction.getStepZ();
 			this.setPosRaw(posX, posY, posZ);
-			double width = (double)this.getWidth();
-			double height = (double)this.getHeight();
-			double width2 = (double)this.getWidth();
+			double width = (double) this.getWidth();
+			double height = (double) this.getHeight();
+			double width2 = (double) this.getWidth();
 			if (this.direction.getAxis() == Direction.Axis.Z) {
 				width2 = 1.0D;
 			} else {
@@ -340,8 +341,8 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 			Direction direction = this.direction.getCounterClockWise();
 			BlockPos.MutableBlockPos blockpos$mutable = new BlockPos.MutableBlockPos();
 
-			for(int k = 0; k < i; ++k) {
-				for(int l = 0; l < j; ++l) {
+			for (int k = 0; k < i; ++k) {
+				for (int l = 0; l < j; ++l) {
 					int i1 = (i - 1) / -2;
 					int j1 = (j - 1) / -2;
 					blockpos$mutable.set(blockpos).move(direction, k + i1).move(Direction.UP, l + j1);

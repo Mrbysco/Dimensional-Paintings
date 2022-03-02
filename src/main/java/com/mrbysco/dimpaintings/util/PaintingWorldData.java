@@ -20,9 +20,10 @@ import java.util.stream.Collectors;
 
 public class PaintingWorldData extends SavedData {
 	private static final String DATA_NAME = DimPaintings.MOD_ID + "_world_data";
+
 	public PaintingWorldData(ListMultimap<ResourceLocation, PaintingLocation> paintingMap) {
 		this.paintingPositionMap.clear();
-		if(!paintingMap.isEmpty()) {
+		if (!paintingMap.isEmpty()) {
 			this.paintingPositionMap.putAll(paintingMap);
 		}
 	}
@@ -35,11 +36,11 @@ public class PaintingWorldData extends SavedData {
 
 	public static PaintingWorldData load(CompoundTag tag) {
 		ListMultimap<ResourceLocation, PaintingLocation> paintingMap = ArrayListMultimap.create();
-		for(String nbtName : tag.getAllKeys()) {
+		for (String nbtName : tag.getAllKeys()) {
 			ListTag dimensionNBTList = new ListTag();
-			if(tag.getTagType(nbtName) == 9) {
+			if (tag.getTagType(nbtName) == 9) {
 				Tag nbt = tag.get(nbtName);
-				if(nbt instanceof ListTag listNBT) {
+				if (nbt instanceof ListTag listNBT) {
 					if (!listNBT.isEmpty() && listNBT.getElementType() != CompoundTag.TAG_COMPOUND) {
 						continue;
 					}
@@ -47,11 +48,11 @@ public class PaintingWorldData extends SavedData {
 					dimensionNBTList = listNBT;
 				}
 			}
-			if(!dimensionNBTList.isEmpty()) {
+			if (!dimensionNBTList.isEmpty()) {
 				List<PaintingLocation> posList = new ArrayList<>();
 				for (int i = 0; i < dimensionNBTList.size(); ++i) {
 					CompoundTag dimTag = dimensionNBTList.getCompound(i);
-					if(dimTag.contains("BlockPos") && dimTag.contains("Direction")) {
+					if (dimTag.contains("BlockPos") && dimTag.contains("Direction")) {
 						BlockPos blockPos = BlockPos.of(dimTag.getLong("BlockPos"));
 						int direction2D = dimTag.getInt("Direction");
 						posList.add(new PaintingLocation(blockPos, direction2D));
@@ -65,7 +66,7 @@ public class PaintingWorldData extends SavedData {
 
 	@Override
 	public CompoundTag save(CompoundTag compound) {
-		for (ResourceLocation dimensionLocation: paintingPositionMap.keySet()) {
+		for (ResourceLocation dimensionLocation : paintingPositionMap.keySet()) {
 			List<PaintingLocation> globalPosList = paintingPositionMap.get(dimensionLocation);
 
 			ListTag dimensionStorage = new ListTag();
@@ -85,10 +86,10 @@ public class PaintingWorldData extends SavedData {
 	}
 
 	public void addPositionToDimension(ResourceLocation dimensionLocation, BlockPos pos, Direction direction) {
-		BlockPos roundedPos = new BlockPos((int)pos.getX(), (int)pos.getY(), (int)pos.getZ());
+		BlockPos roundedPos = new BlockPos((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
 		PaintingLocation position = new PaintingLocation(roundedPos, direction);
 		List<PaintingLocation> similarPos = paintingPositionMap.get(dimensionLocation).stream().filter((loc) -> loc.distanceTo(roundedPos) < 2).collect(Collectors.toList());
-		if(similarPos.isEmpty()) {
+		if (similarPos.isEmpty()) {
 			paintingPositionMap.get(dimensionLocation)
 					.add(position);
 		}
@@ -96,7 +97,7 @@ public class PaintingWorldData extends SavedData {
 	}
 
 	public void removePositionFromDimension(ResourceLocation dimensionLocation, BlockPos pos) {
-		BlockPos roundedPos = new BlockPos((int)pos.getX(), (int)pos.getY(), (int)pos.getZ());
+		BlockPos roundedPos = new BlockPos((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
 		paintingPositionMap.get(dimensionLocation).removeIf((loc) -> loc.distanceTo(roundedPos) < 2);
 		setDirty();
 	}

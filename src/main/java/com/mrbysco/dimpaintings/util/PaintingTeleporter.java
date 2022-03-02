@@ -48,11 +48,11 @@ public class PaintingTeleporter implements ITeleporter {
 		boolean isFromEnd = entity.level.dimension() == Level.END && isToOverworld;
 		boolean isToEnd = destWorld.dimension() == Level.END;
 
-		if(isFromEnd || (isToOverworld && DimensionalConfig.COMMON.overworldToBed.get())) {
+		if (isFromEnd || (isToOverworld && DimensionalConfig.COMMON.overworldToBed.get())) {
 			blockpos = destWorld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, destWorld.getSharedSpawnPos());
 			float angle = entity.getXRot();
 
-			if(isPlayer && entity instanceof ServerPlayer serverPlayer) {
+			if (isPlayer && entity instanceof ServerPlayer serverPlayer) {
 				BlockPos respawnPos = serverPlayer.getRespawnPosition();
 				float respawnAngle = serverPlayer.getRespawnAngle();
 				Optional<Vec3> optional;
@@ -72,7 +72,7 @@ public class PaintingTeleporter implements ITeleporter {
 						f1 = respawnAngle;
 					} else {
 						Vec3 vector3d1 = Vec3.atBottomCenterOf(respawnPos).subtract(vector3d).normalize();
-						f1 = (float)Mth.wrapDegrees(Mth.atan2(vector3d1.z, vector3d1.x) * (double)(180F / (float)Math.PI) - 90.0D);
+						f1 = (float) Mth.wrapDegrees(Mth.atan2(vector3d1.z, vector3d1.x) * (double) (180F / (float) Math.PI) - 90.0D);
 					}
 					angle = f1;
 					blockpos = new BlockPos(vector3d.x, vector3d.y, vector3d.z);
@@ -83,32 +83,32 @@ public class PaintingTeleporter implements ITeleporter {
 				}
 
 				if (flag2) {
-					serverPlayer.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double)respawnPos.getX(), (double)respawnPos.getY(), (double)respawnPos.getZ(), 1.0F, 1.0F));
+					serverPlayer.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double) respawnPos.getX(), (double) respawnPos.getY(), (double) respawnPos.getZ(), 1.0F, 1.0F));
 				}
 			}
-			return new PortalInfo(new Vec3((double)blockpos.getX() + 0.5D, (double)blockpos.getY(), (double)blockpos.getZ() + 0.5D), entity.getDeltaMovement(), angle, entity.getXRot());
-		} else if(isToEnd) {
+			return new PortalInfo(new Vec3((double) blockpos.getX() + 0.5D, (double) blockpos.getY(), (double) blockpos.getZ() + 0.5D), entity.getDeltaMovement(), angle, entity.getXRot());
+		} else if (isToEnd) {
 			ServerLevel.makeObsidianPlatform(destWorld);
 			blockpos = ServerLevel.END_SPAWN_POINT;
 
-			return new PortalInfo(new Vec3((double)blockpos.getX() + 0.5D, (double)blockpos.getY(), (double)blockpos.getZ() + 0.5D), entity.getDeltaMovement(), entity.getYRot(), entity.getXRot());
+			return new PortalInfo(new Vec3((double) blockpos.getX() + 0.5D, (double) blockpos.getY(), (double) blockpos.getZ() + 0.5D), entity.getDeltaMovement(), entity.getYRot(), entity.getXRot());
 		} else {
 			PaintingWorldData worldData = PaintingWorldData.get(destWorld);
 			List<PaintingLocation> paintingList = worldData.getDimensionPositions(destWorld.dimension().location());
-			if(!paintingList.isEmpty()) {
+			if (!paintingList.isEmpty()) {
 				List<ClosestPosition> closestList = new ArrayList<>();
-				for(PaintingLocation paintingPos : paintingList) {
-					int distance = (int)distanceTo(pos, paintingPos.pos);
-					if(distance < i) {
+				for (PaintingLocation paintingPos : paintingList) {
+					int distance = (int) distanceTo(pos, paintingPos.pos);
+					if (distance < i) {
 						blockpos = paintingPos.pos.relative(paintingPos.getDirection());
 						if (!blockpos.equals(BlockPos.ZERO)) {
 							closestList.add(new ClosestPosition(distance, blockpos));
 						}
 					}
 				}
-				if(!closestList.isEmpty()) {
+				if (!closestList.isEmpty()) {
 					Collections.sort(closestList);
-					blockpos = closestList.get(0).getPos();
+					blockpos = closestList.get(0).pos();
 					return moveToSafeCoords(destWorld, entity, blockpos, false);
 				}
 			}
@@ -122,8 +122,8 @@ public class PaintingTeleporter implements ITeleporter {
 	}
 
 	private static double distanceTo(BlockPos origin, BlockPos paintingPos) {
-		float f = (float)(origin.getX() - paintingPos.getX());
-		float f1 = (float)(origin.getZ() - paintingPos.getZ());
+		float f = (float) (origin.getX() - paintingPos.getX());
+		float f1 = (float) (origin.getZ() - paintingPos.getZ());
 		return Mth.sqrt(f * f + f1 * f1);
 	}
 
@@ -131,7 +131,7 @@ public class PaintingTeleporter implements ITeleporter {
 	private static PortalInfo moveToSafeCoords(ServerLevel world, Entity entity, BlockPos pos, boolean withGlass) {
 		if (world.isEmptyBlock(pos.below())) {
 			int distance;
-			for(distance = 1; world.getBlockState(pos.below(distance)).getBlock().isPossibleToRespawnInThis(); ++distance) {
+			for (distance = 1; world.getBlockState(pos.below(distance)).getBlock().isPossibleToRespawnInThis(); ++distance) {
 			}
 
 			if (distance > 4) {
@@ -139,11 +139,11 @@ public class PaintingTeleporter implements ITeleporter {
 			}
 		} else {
 			BlockPos abovePos = pos.above(1);
-			if(!world.getBlockState(pos.below()).getMaterial().isLiquid() && world.getBlockState(pos.above()).getBlock().isPossibleToRespawnInThis() &&
+			if (!world.getBlockState(pos.below()).getMaterial().isLiquid() && world.getBlockState(pos.above()).getBlock().isPossibleToRespawnInThis() &&
 					world.getBlockState(abovePos).getBlock().isPossibleToRespawnInThis()) {
 				return makePortalInfo(entity, abovePos.getX() + 0.5D, abovePos.getY(), abovePos.getZ() + 0.5D);
 			}
-			if(!world.isEmptyBlock(pos.below()) || !world.isEmptyBlock(pos)) {
+			if (!world.isEmptyBlock(pos.below()) || !world.isEmptyBlock(pos)) {
 				makePlatform(world, abovePos, withGlass);
 				return makePortalInfo(entity, abovePos.getX(), abovePos.getY(), abovePos.getZ());
 			}
@@ -156,20 +156,20 @@ public class PaintingTeleporter implements ITeleporter {
 		int i = pos.getX();
 		int j = pos.getY() - 2;
 		int k = pos.getZ();
-		if(withGlass) {
+		if (withGlass) {
 			BlockPos.betweenClosed(i - 2, j + 1, k - 2, i + 2, j + 4, k + 2).forEach((blockPos) -> {
-				if(!world.getFluidState(blockPos).isEmpty() || world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
+				if (!world.getFluidState(blockPos).isEmpty() || world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
 					world.setBlockAndUpdate(blockPos, Blocks.BLACK_STAINED_GLASS.defaultBlockState());
 				}
 			});
 			BlockPos.betweenClosed(i - 1, j + 1, k - 1, i + 1, j + 3, k + 1).forEach((blockPos) -> {
-				if(world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
+				if (world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
 					world.setBlockAndUpdate(blockPos, Blocks.AIR.defaultBlockState());
 				}
 			});
 		}
 		BlockPos.betweenClosed(i - 1, j, k - 1, i + 1, j, k + 1).forEach((blockPos) -> {
-			if(world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
+			if (world.getBlockState(blockPos).getDestroySpeed(world, blockPos) >= 0) {
 				world.setBlockAndUpdate(blockPos, Blocks.OBSIDIAN.defaultBlockState());
 			}
 		});
@@ -209,18 +209,9 @@ public class PaintingTeleporter implements ITeleporter {
 	}
 
 	record ClosestPosition(int distance, BlockPos pos) implements Comparable<ClosestPosition> {
-
-		public int getDistance() {
-			return distance;
-		}
-
-		public BlockPos getPos() {
-			return pos;
-		}
-
 		@Override
 		public int compareTo(ClosestPosition anotherPosition) {
-			return compare(this.distance, anotherPosition.getDistance());
+			return compare(this.distance, anotherPosition.distance());
 		}
 
 		public static int compare(int x, int y) {

@@ -17,26 +17,26 @@ public class TeleportHelper {
 
 	public static void teleportToGivenDimension(Entity entityIn, ResourceLocation dimensionLocation) {
 		ResourceKey<Level> dimensionKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, dimensionLocation);
-		if(entityIn.level.dimension() != dimensionKey) {
+		if (entityIn.level.dimension() != dimensionKey) {
 			MinecraftServer server = entityIn.getServer();
 			ServerLevel destinationWorld = server != null ? server.getLevel(dimensionKey) : null;
 
-			if(destinationWorld == null) {
+			if (destinationWorld == null) {
 				DimPaintings.LOGGER.error("Destination of painting invalid {} isn't known", dimensionLocation);
 				return;
 			}
 
 			PaintingTeleporter teleporter = new PaintingTeleporter(destinationWorld);
 
-			if(entityIn instanceof Player) {
+			if (entityIn instanceof Player) {
 				ServerPlayer playerMP = (ServerPlayer) entityIn;
 				playerMP.changeDimension(destinationWorld, teleporter);
 			} else {
 				entityIn.changeDimension(destinationWorld, teleporter);
 			}
 		} else {
-			if(entityIn instanceof Player) {
-				((Player)entityIn).displayClientMessage(new TextComponent("Can't teleport to the same dimension").withStyle(ChatFormatting.YELLOW), true);
+			if (entityIn instanceof Player) {
+				((Player) entityIn).displayClientMessage(new TextComponent("Can't teleport to the same dimension").withStyle(ChatFormatting.YELLOW), true);
 			}
 		}
 	}

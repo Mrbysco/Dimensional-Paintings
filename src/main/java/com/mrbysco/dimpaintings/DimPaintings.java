@@ -1,5 +1,6 @@
 package com.mrbysco.dimpaintings;
 
+import com.mojang.logging.LogUtils;
 import com.mrbysco.dimpaintings.client.ClientHandler;
 import com.mrbysco.dimpaintings.config.DimensionalConfig;
 import com.mrbysco.dimpaintings.handler.CooldownHandler;
@@ -12,28 +13,27 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig.Type;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 @Mod(DimPaintings.MOD_ID)
 public class DimPaintings {
-    public static final String MOD_ID = "dimpaintings";
-    public static final Logger LOGGER = LogManager.getLogger();
+	public static final String MOD_ID = "dimpaintings";
+	public static final Logger LOGGER = LogUtils.getLogger();
 
-    public DimPaintings() {
-        IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        ModLoadingContext.get().registerConfig(Type.COMMON, DimensionalConfig.commonSpec);
-        eventBus.register(DimensionalConfig.class);
+	public DimPaintings() {
+		IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
+		ModLoadingContext.get().registerConfig(Type.COMMON, DimensionalConfig.commonSpec);
+		eventBus.register(DimensionalConfig.class);
 
-        PaintingRegistry.ENTITIES.register(eventBus);
-        PaintingRegistry.DIM_PAINTINGS.register(eventBus);
-        PaintingRegistry.ITEMS.register(eventBus);
+		PaintingRegistry.ENTITIES.register(eventBus);
+		PaintingRegistry.DIM_PAINTINGS.register(eventBus);
+		PaintingRegistry.ITEMS.register(eventBus);
 
-        MinecraftForge.EVENT_BUS.register(new CooldownHandler());
+		MinecraftForge.EVENT_BUS.register(new CooldownHandler());
 
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-            eventBus.addListener(ClientHandler::registerItemColors);
-            eventBus.addListener(ClientHandler::registerEntityRenders);
-        });
-    }
+		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+			eventBus.addListener(ClientHandler::registerItemColors);
+			eventBus.addListener(ClientHandler::registerEntityRenders);
+		});
+	}
 }
