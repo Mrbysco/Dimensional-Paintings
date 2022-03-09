@@ -8,18 +8,17 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.TextureAtlasHolder;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ReloadableResourceManager;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 
 import java.util.stream.Stream;
 
-public class DimensionalPaintingSpriteUploader extends TextureAtlasHolder {
+public class DimensionalPaintingTextureManager extends TextureAtlasHolder {
 	public static final ResourceLocation LOCATION_DIMENSIONAL_TEXTURES = new ResourceLocation(DimPaintings.MOD_ID, "textures/atlas/dimensional_paintings.png");
 	private static final ResourceLocation BACK_SPRITE_LOCATION = new ResourceLocation(DimPaintings.MOD_ID, "back");
 
-	private static DimensionalPaintingSpriteUploader spriteUploader;
+	private static DimensionalPaintingTextureManager spriteUploader;
 
-	public DimensionalPaintingSpriteUploader(TextureManager textureManager) {
+	public DimensionalPaintingTextureManager(TextureManager textureManager) {
 		super(textureManager, LOCATION_DIMENSIONAL_TEXTURES, "dimensional_painting");
 	}
 
@@ -35,15 +34,12 @@ public class DimensionalPaintingSpriteUploader extends TextureAtlasHolder {
 		return this.getSprite(BACK_SPRITE_LOCATION);
 	}
 
-	public static void initialize() {
-		spriteUploader = new DimensionalPaintingSpriteUploader(Minecraft.getInstance().getTextureManager());
-		ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
-		if (resourceManager instanceof ReloadableResourceManager) {
-			((ReloadableResourceManager) resourceManager).registerReloadListener(spriteUploader);
-		}
+	public static void initialize(RegisterClientReloadListenersEvent event) {
+		spriteUploader = new DimensionalPaintingTextureManager(Minecraft.getInstance().getTextureManager());
+		event.registerReloadListener(spriteUploader);
 	}
 
-	public static DimensionalPaintingSpriteUploader instance() {
+	public static DimensionalPaintingTextureManager instance() {
 		return spriteUploader;
 	}
 }

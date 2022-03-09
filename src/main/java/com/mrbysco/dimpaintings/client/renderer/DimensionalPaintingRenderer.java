@@ -31,14 +31,14 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 		float f = 0.0625F;
 		poseStack.scale(f, f, f);
 		VertexConsumer consumer = bufferSource.getBuffer(RenderType.entitySolid(this.getTextureLocation(dimensionalPainting)));
-		DimensionalPaintingSpriteUploader paintingSpriteUploader = DimensionalPaintingSpriteUploader.instance();
+		DimensionalPaintingTextureManager paintingSpriteUploader = DimensionalPaintingTextureManager.instance();
 		this.renderDimensionalPainting(poseStack, consumer, dimensionalPainting, dimensionType.getWidth(), dimensionType.getHeight(), paintingSpriteUploader.get(dimensionType), paintingSpriteUploader.getBackSprite());
 		poseStack.popPose();
 		super.render(dimensionalPainting, entityYaw, partialTicks, poseStack, bufferSource, p_225623_6_);
 	}
 
 	public ResourceLocation getTextureLocation(DimensionalPainting dimensionalPainting) {
-		return DimensionalPaintingSpriteUploader.instance()
+		return DimensionalPaintingTextureManager.instance()
 				.getBackSprite()
 				.atlas()
 				.location();

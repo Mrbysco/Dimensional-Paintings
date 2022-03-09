@@ -32,7 +32,7 @@ public class DimPaintings {
 		MinecraftForge.EVENT_BUS.register(new CooldownHandler());
 
 		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-			eventBus.addListener(ClientHandler::registerItemColors);
+			eventBus.addListener(ClientHandler::onRegisterReloadListeners);
 			eventBus.addListener(ClientHandler::registerEntityRenders);
 		});
 	}
