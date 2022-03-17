@@ -23,11 +23,11 @@ public class DimensionalPaintingTextureManager extends TextureAtlasHolder {
 	}
 
 	protected Stream<ResourceLocation> getResourcesToLoad() {
-		return Stream.concat(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKeys().stream(), Stream.of(BACK_SPRITE_LOCATION));
+		return Stream.concat(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getKeys().stream(), Stream.of(BACK_SPRITE_LOCATION));
 	}
 
 	public TextureAtlasSprite get(DimensionPaintingType paintingType) {
-		return this.getSprite(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(paintingType));
+		return this.getSprite(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getKey(paintingType));
 	}
 
 	public TextureAtlasSprite getBackSprite() {

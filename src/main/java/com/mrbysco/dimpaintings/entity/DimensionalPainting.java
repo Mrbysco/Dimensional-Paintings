@@ -70,7 +70,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	public DimensionalPainting(SpawnEntity spawnEntity, Level worldIn) {
 		this(worldIn, new BlockPos((int) spawnEntity.getPosX(), (int) spawnEntity.getPosY(), (int) spawnEntity.getPosZ()),
 				Direction.from2DDataValue(spawnEntity.getAdditionalData().readByte()),
-				PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getValue(ResourceLocation.tryParse(spawnEntity.getAdditionalData().readUtf())));
+				PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getValue(ResourceLocation.tryParse(spawnEntity.getAdditionalData().readUtf())));
 
 		FriendlyByteBuf additionalData = spawnEntity.getAdditionalData();
 		Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
@@ -194,7 +194,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public void addAdditionalSaveData(CompoundTag compoundNBT) {
-		compoundNBT.putString("Dimension", PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(this.dimensionType).toString());
+		compoundNBT.putString("Dimension", PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getKey(this.dimensionType).toString());
 		compoundNBT.putByte("Facing", (byte) this.direction.get2DDataValue());
 		ItemStack itemstack = this.getItemRaw();
 		if (!itemstack.isEmpty()) {
@@ -204,7 +204,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public void readAdditionalSaveData(CompoundTag compoundNBT) {
-		this.dimensionType = PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getValue(ResourceLocation.tryParse(compoundNBT.getString("Dimension")));
+		this.dimensionType = PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getValue(ResourceLocation.tryParse(compoundNBT.getString("Dimension")));
 		this.direction = Direction.from2DDataValue(compoundNBT.getByte("Facing"));
 		super.readAdditionalSaveData(compoundNBT);
 		this.setDirection(this.direction);
