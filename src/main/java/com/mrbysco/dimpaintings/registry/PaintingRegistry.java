@@ -15,7 +15,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class PaintingRegistry {
 	public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES, DimPaintings.MOD_ID);
-	public static final DeferredRegister<DimensionPaintingType> DIM_PAINTINGS = DeferredRegister.create(DimensionPaintingType.class, DimPaintings.MOD_ID);
+	public static final DeferredRegister<DimensionPaintingType> DIM_PAINTINGS = DeferredRegister.create(PaintingTypeRegistry.registryLocation, DimPaintings.MOD_ID);
 	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, DimPaintings.MOD_ID);
 
 	public static final RegistryObject<DimensionPaintingType> OVERWORLD = DIM_PAINTINGS.register("overworld", () -> new DimensionPaintingType(new ResourceLocation("overworld"), 64, 32));
