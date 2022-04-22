@@ -1,5 +1,6 @@
 package com.mrbysco.dimpaintings.entity;
 
+import com.mrbysco.dimpaintings.DimPaintings;
 import com.mrbysco.dimpaintings.config.DimensionalConfig;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
@@ -12,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -212,11 +214,10 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 		this.setItem(itemstack);
 	}
 
-	public void setItem(ItemStack p_213884_1_) {
-		if (p_213884_1_.getItem() != PaintingRegistry.OVERWORLD_PAINTING.get() || p_213884_1_.hasTag()) {
-			this.getEntityData().set(DATA_ITEM_STACK, Util.make(p_213884_1_.copy(), (stack) -> stack.setCount(1)));
+	public void setItem(ItemStack stack) {
+		if (stack.getItem() != PaintingRegistry.OVERWORLD_PAINTING.get() || stack.hasTag()) {
+			this.getEntityData().set(DATA_ITEM_STACK, Util.make(stack.copy(), (itemStack) -> itemStack.setCount(1)));
 		}
-
 	}
 
 	protected ItemStack getItemRaw() {
@@ -329,6 +330,10 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 		return size % 32 == 0 ? 0.5D : 0.0D;
 	}
 
+	@Override
+	public Component getName() {
+		return this.getItem().getDisplayName();
+	}
 
 	@Override
 	public boolean survives() {

@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
+import net.minecraftforge.event.world.BlockEvent.PortalSpawnEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class CooldownHandler {
@@ -24,6 +25,13 @@ public class CooldownHandler {
 					persistentData.putInt("PaintingCooldown", currentCooldown);
 				}
 			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onNetherPortal(PortalSpawnEvent event) {
+		if (DimensionalConfig.COMMON.disableNetherPortal.get()) {
+			event.setCanceled(true);
 		}
 	}
 }

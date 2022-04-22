@@ -13,6 +13,7 @@ public class DimensionalConfig {
 		public final BooleanValue overworldToBed;
 		public final IntValue netherMaxY;
 		public final IntValue teleportCooldown;
+		public final BooleanValue disableNetherPortal;
 
 		Common(ForgeConfigSpec.Builder builder) {
 			builder.comment("General settings")
@@ -29,6 +30,10 @@ public class DimensionalConfig {
 			teleportCooldown = builder
 					.comment("Amount of seconds between being able to teleport (Default: 4)")
 					.defineInRange("teleportCooldown", 4, 0, Integer.MAX_VALUE);
+
+			disableNetherPortal = builder
+					.comment("Disable nether portal creation (Default: false)")
+					.define("disableNetherPortal", false);
 
 			builder.pop();
 		}

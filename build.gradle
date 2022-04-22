@@ -91,12 +91,21 @@ repositories {
         name 'JEI maven'
         url = "https://dvs1.progwml6.com/files/maven"
     }
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 
     implementation fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}")
+
+    implementation fg.deobf("curse.maven:jade-324717:3681449") //Jade (WAILA)
+    implementation fg.deobf("curse.maven:TheOneProbe-245211:3671753")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..

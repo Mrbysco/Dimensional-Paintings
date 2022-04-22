@@ -5,5 +5,7 @@
   "item.dimpaintings.end_painting": "End Painting",
 
   "dimpaintings.same_dimension": "Can't teleport to the same dimension",
-  "dimpaintings.cooldown": "Teleportation on cooldown"
+  "dimpaintings.cooldown": "Teleportation on cooldown",
+
+  "entity.dimpaintings.dimensional_painting": "Dimensional Painting"
 }
