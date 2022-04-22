@@ -1,0 +1,9 @@
+{
+  "itemGroup.dimpaintings": "Dimensional Paintings",
+  "item.dimpaintings.overworld_painting": "Картина: Надземный мир",
+  "item.dimpaintings.nether_painting": "Картина: Незер",
+  "item.dimpaintings.end_painting": "Картина: Край",
+
+  "dimpaintings.same_dimension": "Нельзя телепортироваться в одно и то же измерение.",
+  "dimpaintings.cooldown": "Телепортация на охлаждении."
+}
