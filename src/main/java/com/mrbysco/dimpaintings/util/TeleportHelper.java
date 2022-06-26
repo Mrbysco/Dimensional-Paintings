@@ -3,7 +3,7 @@ package com.mrbysco.dimpaintings.util;
 import com.mrbysco.dimpaintings.DimPaintings;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -36,7 +36,7 @@ public class TeleportHelper {
 			}
 		} else {
 			if (entityIn instanceof Player) {
-				((Player) entityIn).displayClientMessage(new TextComponent("Can't teleport to the same dimension").withStyle(ChatFormatting.YELLOW), true);
+				((Player) entityIn).displayClientMessage(Component.translatable("dimpaintings.same_dimension").withStyle(ChatFormatting.YELLOW), true);
 			}
 		}
 	}

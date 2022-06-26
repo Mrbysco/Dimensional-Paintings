@@ -13,7 +13,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -176,7 +175,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 					player.teleportTo((int) this.getX(), (int) this.getY(), (int) this.getZ());
 					TeleportHelper.teleportToGivenDimension(player, this.dimensionType.getDimensionLocation());
 				} else {
-					player.displayClientMessage(new TranslatableComponent("dimpaintings.cooldown").withStyle(ChatFormatting.GOLD), true);
+					player.displayClientMessage(Component.translatable("dimpaintings.cooldown").withStyle(ChatFormatting.GOLD), true);
 				}
 			}
 		}
@@ -271,8 +270,8 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	@Override
 	public void writeSpawnData(FriendlyByteBuf buffer) {
 		buffer.writeByte((byte) this.direction.get2DDataValue());
-		buffer.writeUtf(this.dimensionType.getRegistryName().toString());
-		buffer.writeUtf(getItem().getItem().getRegistryName().toString());
+		buffer.writeUtf(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getKey(this.dimensionType).toString());
+		buffer.writeUtf(ForgeRegistries.ITEMS.getKey(getItem().getItem()).toString());
 	}
 
 	@Override

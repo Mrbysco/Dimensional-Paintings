@@ -83,7 +83,7 @@ public class PaintingTeleporter implements ITeleporter {
 				}
 
 				if (flag2) {
-					serverPlayer.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double) respawnPos.getX(), (double) respawnPos.getY(), (double) respawnPos.getZ(), 1.0F, 1.0F));
+					serverPlayer.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double) respawnPos.getX(), (double) respawnPos.getY(), (double) respawnPos.getZ(), 1.0F, 1.0F, destWorld.getSeed()));
 				}
 			}
 			return new PortalInfo(new Vec3((double) blockpos.getX() + 0.5D, (double) blockpos.getY(), (double) blockpos.getZ() + 0.5D), entity.getDeltaMovement(), angle, entity.getXRot());

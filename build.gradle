@@ -1,29 +1,18 @@
-buildscript {
-    repositories {
-        // These repositories are only for Gradle plugins, put any other repositories in the repository block further below
-        maven { url = 'https://maven.minecraftforge.net' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-    }
-}
-//Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 plugins {
     id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '5.+'
 }
-apply plugin: 'net.minecraftforge.gradle'
 
 version = "${version}"
 group = 'com.mrbysco.dimpaintings' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "Dimensional-Paintings-${mc_version}"
 
-// Mojang ships Java 16 to end users in 1.17+ instead of Java 8 in 1.16 or lower, so your mod should target Java 16.
+// Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
-    mappings  channel: "${mcp_channel}", version: "${mcp_mappings}"
+    mappings channel: "${mcp_channel}", version: "${mcp_mappings}"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -102,23 +91,23 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 
-    implementation fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}")
+    implementation fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
 
-    implementation fg.deobf("curse.maven:jade-324717:3681449") //Jade (WAILA)
-    implementation fg.deobf("curse.maven:TheOneProbe-245211:3671753")
+    implementation fg.deobf("curse.maven:jade-324717:3834997") //Jade (WAILA)
+    implementation fg.deobf("curse.maven:TheOneProbe-245211:3838419")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
 jar {
     manifest {
         attributes([
-            "Specification-Title": "dimpaintings",
-            "Specification-Vendor": "Mrbysco",
-            "Specification-Version": "1", // We are version 1 of ourselves
-            "Implementation-Title": project.name,
-            "Implementation-Version": "${version}",
-            "Implementation-Vendor" :"Mrbysco",
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+                "Specification-Title"     : "dimpaintings",
+                "Specification-Vendor"    : "Mrbysco",
+                "Specification-Version"   : "1", // We are version 1 of ourselves
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : "${version}",
+                "Implementation-Vendor"   : "Mrbysco",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
 }

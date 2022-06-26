@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[40,)"
+loaderVersion="[41,)"
 issueTrackerURL="https://github.com/Mrbysco/Dimensional-Paintings/issues"
 license="MIT"
 
@@ -15,12 +15,6 @@ Just jump in :)
 [[dependencies.dimpaintings]]
 modId="minecraft"
 mandatory=true
-versionRange="[1.18.2,1.19)"
-ordering="NONE"
-side="BOTH"
-[[dependencies.dimpaintings]]
-modId="forge"
-mandatory=true
-versionRange="[40.0.18,)"
+versionRange="[1.19,1.20)"
 ordering="NONE"
 side="BOTH"

@@ -19,7 +19,6 @@ public class PaintingTypeRegistry {
 	public static void onNewRegistry(NewRegistryEvent event) {
 		RegistryBuilder<DimensionPaintingType> registryBuilder = new RegistryBuilder<>();
 		registryBuilder.setName(registryLocation);
-		registryBuilder.setType(DimensionPaintingType.class);
 		DIMENSIONAL_PAINTINGS = event.create(registryBuilder);
 	}
 }
