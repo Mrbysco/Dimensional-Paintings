@@ -1,6 +1,5 @@
 package com.mrbysco.dimpaintings.entity;
 
-import com.mrbysco.dimpaintings.DimPaintings;
 import com.mrbysco.dimpaintings.config.DimensionalConfig;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
