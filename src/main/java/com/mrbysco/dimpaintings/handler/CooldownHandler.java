@@ -5,7 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
-import net.minecraftforge.event.world.BlockEvent.PortalSpawnEvent;
+import net.minecraftforge.event.level.BlockEvent.PortalSpawnEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class CooldownHandler {

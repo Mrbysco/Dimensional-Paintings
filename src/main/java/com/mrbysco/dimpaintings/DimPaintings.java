@@ -25,7 +25,7 @@ public class DimPaintings {
 		ModLoadingContext.get().registerConfig(Type.COMMON, DimensionalConfig.commonSpec);
 		eventBus.register(DimensionalConfig.class);
 
-		PaintingRegistry.ENTITIES.register(eventBus);
+		PaintingRegistry.ENTITY_TYPES.register(eventBus);
 		PaintingRegistry.DIM_PAINTINGS.register(eventBus);
 		PaintingRegistry.ITEMS.register(eventBus);
 

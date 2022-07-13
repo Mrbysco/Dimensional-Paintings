@@ -91,10 +91,13 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 
-    implementation fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
 
-    implementation fg.deobf("curse.maven:jade-324717:3834997") //Jade (WAILA)
-    implementation fg.deobf("curse.maven:TheOneProbe-245211:3838419")
+    // runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
+
+    implementation fg.deobf("curse.maven:jade-324717:3872400") //Jade (WAILA)
+    implementation fg.deobf("curse.maven:TheOneProbe-245211:3871444")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..

@@ -14,7 +14,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 public class PaintingRegistry {
-	public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES, DimPaintings.MOD_ID);
+	public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, DimPaintings.MOD_ID);
 	public static final DeferredRegister<DimensionPaintingType> DIM_PAINTINGS = DeferredRegister.create(PaintingTypeRegistry.registryLocation, DimPaintings.MOD_ID);
 	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, DimPaintings.MOD_ID);
 
@@ -26,7 +26,7 @@ public class PaintingRegistry {
 	public static final RegistryObject<Item> NETHER_PAINTING = ITEMS.register("nether_painting", () -> new DimensionalPaintingItem(new Item.Properties().tab(CreativeModeTab.TAB_MISC), NETHER));
 	public static final RegistryObject<Item> END_PAINTING = ITEMS.register("end_painting", () -> new DimensionalPaintingItem(new Item.Properties().tab(CreativeModeTab.TAB_MISC), END));
 
-	public static final RegistryObject<EntityType<DimensionalPainting>> DIMENSIONAL_PAINTING = ENTITIES.register("dimensional_painting", () ->
+	public static final RegistryObject<EntityType<DimensionalPainting>> DIMENSIONAL_PAINTING = ENTITY_TYPES.register("dimensional_painting", () ->
 			register("dimensional_painting", EntityType.Builder.<DimensionalPainting>of(DimensionalPainting::new, MobCategory.MISC)
 					.sized(0.5F, 0.5F)
 					.clientTrackingRange(10).updateInterval(Integer.MAX_VALUE)
