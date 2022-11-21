@@ -55,20 +55,20 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 		super(entityType, world);
 	}
 
-	public DimensionalPainting(Level world, BlockPos blockPos, Direction direction, DimensionPaintingType paintingType) {
-		super(PaintingRegistry.DIMENSIONAL_PAINTING.get(), world, blockPos);
+	public DimensionalPainting(Level level, BlockPos blockPos, Direction direction, DimensionPaintingType paintingType) {
+		super(PaintingRegistry.DIMENSIONAL_PAINTING.get(), level, blockPos);
 		this.setDimensionType(paintingType);
 		this.setDirection(direction);
 
-		if (!level.isClientSide) {
-			ServerLevel serverWorld = (ServerLevel) world;
-			PaintingWorldData worldData = PaintingWorldData.get(serverWorld);
-			worldData.addPositionToDimension(world.dimension().location(), getPos(), getDirection());
+		if (!this.level.isClientSide) {
+			ServerLevel serverLevel = (ServerLevel) level;
+			PaintingWorldData worldData = PaintingWorldData.get(serverLevel);
+			worldData.addPositionToDimension(level.dimension().location(), getPos(), getDirection());
 		}
 	}
 
-	public DimensionalPainting(SpawnEntity spawnEntity, Level worldIn) {
-		this(worldIn, new BlockPos((int) spawnEntity.getPosX(), (int) spawnEntity.getPosY(), (int) spawnEntity.getPosZ()),
+	public DimensionalPainting(SpawnEntity spawnEntity, Level level) {
+		this(level, new BlockPos((int) spawnEntity.getPosX(), (int) spawnEntity.getPosY(), (int) spawnEntity.getPosZ()),
 				Direction.from2DDataValue(spawnEntity.getAdditionalData().readByte()),
 				PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getValue(ResourceLocation.tryParse(spawnEntity.getAdditionalData().readUtf())));
 
