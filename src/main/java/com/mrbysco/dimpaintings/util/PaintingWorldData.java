@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 public class PaintingWorldData extends WorldSavedData {
 	private static final String DATA_NAME = DimPaintings.MOD_ID + "_world_data";
+
 	public PaintingWorldData() {
 		super(DATA_NAME);
 	}
@@ -29,11 +30,11 @@ public class PaintingWorldData extends WorldSavedData {
 
 	@Override
 	public void load(CompoundNBT compound) {
-		for(String nbtName : compound.getAllKeys()) {
+		for (String nbtName : compound.getAllKeys()) {
 			ListNBT dimensionNBTList = new ListNBT();
-			if(compound.getTagType(nbtName) == 9) {
+			if (compound.getTagType(nbtName) == 9) {
 				INBT nbt = compound.get(nbtName);
-				if(nbt instanceof ListNBT) {
+				if (nbt instanceof ListNBT) {
 					ListNBT listNBT = (ListNBT) nbt;
 					if (!listNBT.isEmpty() && listNBT.getElementType() != Constants.NBT.TAG_COMPOUND) {
 						return;
@@ -42,11 +43,11 @@ public class PaintingWorldData extends WorldSavedData {
 					dimensionNBTList = listNBT;
 				}
 			}
-			if(!dimensionNBTList.isEmpty()) {
+			if (!dimensionNBTList.isEmpty()) {
 				List<PaintingLocation> posList = new ArrayList<>();
 				for (int i = 0; i < dimensionNBTList.size(); ++i) {
 					CompoundNBT tag = dimensionNBTList.getCompound(i);
-					if(tag.contains("BlockPos") && tag.contains("Direction")) {
+					if (tag.contains("BlockPos") && tag.contains("Direction")) {
 						BlockPos blockPos = BlockPos.of(tag.getLong("BlockPos"));
 						int direction2D = tag.getInt("Direction");
 						posList.add(new PaintingLocation(blockPos, direction2D));
@@ -59,7 +60,7 @@ public class PaintingWorldData extends WorldSavedData {
 
 	@Override
 	public CompoundNBT save(CompoundNBT compound) {
-		for (ResourceLocation dimensionLocation: paintingPositionMap.keySet()) {
+		for (ResourceLocation dimensionLocation : paintingPositionMap.keySet()) {
 			List<PaintingLocation> globalPosList = paintingPositionMap.get(dimensionLocation);
 
 			ListNBT dimensionStorage = new ListNBT();
@@ -79,10 +80,10 @@ public class PaintingWorldData extends WorldSavedData {
 	}
 
 	public void addPositionToDimension(ResourceLocation dimensionLocation, BlockPos pos, Direction direction) {
-		BlockPos roundedPos = new BlockPos((int)pos.getX(), (int)pos.getY(), (int)pos.getZ());
+		BlockPos roundedPos = new BlockPos((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
 		PaintingLocation position = new PaintingLocation(roundedPos, direction);
 		List<PaintingLocation> similarPos = paintingPositionMap.get(dimensionLocation).stream().filter((loc) -> loc.distanceTo(roundedPos) < 2).collect(Collectors.toList());
-		if(similarPos.isEmpty()) {
+		if (similarPos.isEmpty()) {
 			paintingPositionMap.get(dimensionLocation)
 					.add(position);
 		}
@@ -90,7 +91,7 @@ public class PaintingWorldData extends WorldSavedData {
 	}
 
 	public void removePositionFromDimension(ResourceLocation dimensionLocation, BlockPos pos) {
-		BlockPos roundedPos = new BlockPos((int)pos.getX(), (int)pos.getY(), (int)pos.getZ());
+		BlockPos roundedPos = new BlockPos((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
 		paintingPositionMap.get(dimensionLocation).removeIf((loc) -> loc.distanceTo(roundedPos) < 2);
 		setDirty();
 	}
