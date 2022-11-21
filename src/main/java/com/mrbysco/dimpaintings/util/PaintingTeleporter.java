@@ -132,7 +132,7 @@ public class PaintingTeleporter implements ITeleporter {
 	private static PortalInfo moveToSafeCoords(ServerLevel world, Entity entity, BlockPos pos, boolean withGlass) {
 		if (world.isEmptyBlock(pos.below())) {
 			int distance;
-			for(distance = 1; world.getBlockState(pos.below(distance)).getBlock().isPossibleToRespawnInThis(); ++distance) {
+			for (distance = 1; world.getBlockState(pos.below(distance)).getBlock().isPossibleToRespawnInThis() && distance < 32; ++distance) {
 			}
 
 			if (distance > 4) {
@@ -140,11 +140,11 @@ public class PaintingTeleporter implements ITeleporter {
 			}
 		} else {
 			BlockPos abovePos = pos.above(1);
-			if(!world.getBlockState(pos.below()).getMaterial().isLiquid() && world.getBlockState(pos.above()).getBlock().isPossibleToRespawnInThis() &&
+			if (world.getBlockState(pos.above()).getBlock().isPossibleToRespawnInThis() &&
 					world.getBlockState(abovePos).getBlock().isPossibleToRespawnInThis()) {
 				return makePortalInfo(entity, abovePos.getX() + 0.5D, abovePos.getY(), abovePos.getZ() + 0.5D);
 			}
-			if(!world.isEmptyBlock(pos.below()) || !world.isEmptyBlock(pos)) {
+			if (!world.isEmptyBlock(pos.below()) || !world.isEmptyBlock(pos)) {
 				makePlatform(world, abovePos, withGlass);
 				return makePortalInfo(entity, abovePos.getX(), abovePos.getY(), abovePos.getZ());
 			}
