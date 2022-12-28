@@ -2,9 +2,7 @@ package com.mrbysco.dimpaintings.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import com.mrbysco.dimpaintings.entity.DimensionalPainting;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -18,6 +16,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 
 public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPainting> {
 	public DimensionalPaintingRenderer(Context rendererManager) {
@@ -26,7 +26,8 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 
 	public void render(DimensionalPainting dimensionalPainting, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int p_225623_6_) {
 		poseStack.pushPose();
-		poseStack.mulPose(Vector3f.YP.rotationDegrees(180.0F - entityYaw));
+		poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - entityYaw));
+
 		DimensionPaintingType dimensionType = dimensionalPainting.dimensionType;
 		float f = 0.0625F;
 		poseStack.scale(f, f, f);
@@ -40,8 +41,7 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 	public ResourceLocation getTextureLocation(DimensionalPainting dimensionalPainting) {
 		return DimensionalPaintingTextureManager.instance()
 				.getBackSprite()
-				.atlas()
-				.location();
+				.atlasLocation();
 	}
 
 	private void renderDimensionalPainting(PoseStack poseStack, VertexConsumer consumer, DimensionalPainting dimensionalPainting, int p_229122_4_, int p_229122_5_, TextureAtlasSprite atlasSprite, TextureAtlasSprite atlasSprite1) {

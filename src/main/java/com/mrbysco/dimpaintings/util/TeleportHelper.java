@@ -3,6 +3,7 @@ package com.mrbysco.dimpaintings.util;
 import com.mrbysco.dimpaintings.DimPaintings;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -16,7 +17,7 @@ import net.minecraft.world.level.Level;
 public class TeleportHelper {
 
 	public static void teleportToGivenDimension(Entity entityIn, ResourceLocation dimensionLocation) {
-		ResourceKey<Level> dimensionKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, dimensionLocation);
+		ResourceKey<Level> dimensionKey = ResourceKey.create(Registries.DIMENSION, dimensionLocation);
 		if (entityIn.level.dimension() != dimensionKey) {
 			MinecraftServer server = entityIn.getServer();
 			ServerLevel destinationWorld = server != null ? server.getLevel(dimensionKey) : null;

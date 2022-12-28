@@ -2,7 +2,6 @@ package com.mrbysco.dimpaintings.item;
 
 import com.mrbysco.dimpaintings.entity.DimensionalPainting;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
-import com.mrbysco.dimpaintings.registry.PaintingTab;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -20,7 +19,7 @@ public class DimensionalPaintingItem extends Item {
 	private final Supplier<DimensionPaintingType> paintingDimensionSupplier;
 
 	public DimensionalPaintingItem(Item.Properties properties, Supplier<DimensionPaintingType> paintingDimension) {
-		super(properties.tab(PaintingTab.MAIN_TAB));
+		super(properties);
 		this.paintingDimensionSupplier = paintingDimension;
 	}
 

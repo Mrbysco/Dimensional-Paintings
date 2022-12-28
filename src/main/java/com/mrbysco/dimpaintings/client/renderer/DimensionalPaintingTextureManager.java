@@ -10,20 +10,15 @@ import net.minecraft.client.resources.TextureAtlasHolder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 
-import java.util.stream.Stream;
-
 public class DimensionalPaintingTextureManager extends TextureAtlasHolder {
 	public static final ResourceLocation LOCATION_DIMENSIONAL_TEXTURES = new ResourceLocation(DimPaintings.MOD_ID, "textures/atlas/dimensional_paintings.png");
+	public static final ResourceLocation INFO_LOCATION = new ResourceLocation(DimPaintings.MOD_ID, "dimensional_paintings");
 	private static final ResourceLocation BACK_SPRITE_LOCATION = new ResourceLocation(DimPaintings.MOD_ID, "back");
 
 	private static DimensionalPaintingTextureManager spriteUploader;
 
 	public DimensionalPaintingTextureManager(TextureManager textureManager) {
-		super(textureManager, LOCATION_DIMENSIONAL_TEXTURES, "dimensional_painting");
-	}
-
-	protected Stream<ResourceLocation> getResourcesToLoad() {
-		return Stream.concat(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getKeys().stream(), Stream.of(BACK_SPRITE_LOCATION));
+		super(textureManager, LOCATION_DIMENSIONAL_TEXTURES, INFO_LOCATION);
 	}
 
 	public TextureAtlasSprite get(DimensionPaintingType paintingType) {
