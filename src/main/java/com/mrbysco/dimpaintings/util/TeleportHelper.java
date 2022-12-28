@@ -2,7 +2,6 @@ package com.mrbysco.dimpaintings.util;
 
 import com.mrbysco.dimpaintings.DimPaintings;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
