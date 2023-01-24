@@ -24,8 +24,10 @@ public class DimensionalConfig {
 					.define("overworldToBed", false);
 
 			netherMaxY = builder
-					.comment("Dictates the max Y at which the Nether Painting will place you in the Nether [51 = Spawn in a bubble at Y 50 if nothing] (Default: 120)")
-					.defineInRange("netherMaxY", 120, 10, 120);
+					.comment("Dictates the max Y at which the Nether Painting will place you in the Nether",
+							"[For a vanilla nether it's recommended to keep the value between 10 and 120",
+							"[51 = Spawn in a bubble at Y 50 if nothing] (Default: 120)")
+					.defineInRange("netherMaxY", 120, -2048, 2048);
 
 			teleportCooldown = builder
 					.comment("Amount of seconds between being able to teleport (Default: 4)")
