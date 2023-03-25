@@ -105,7 +105,7 @@ dependencies {
     implementation fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}")
 
     implementation fg.deobf("curse.maven:jade-324717:3681449") //Jade (WAILA)
-    implementation fg.deobf("curse.maven:TheOneProbe-245211:3671753")
+    implementation fg.deobf("curse.maven:TheOneProbe-245211:3671753") //The One Probe (TOP)
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
