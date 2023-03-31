@@ -264,7 +264,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 
 	@OnlyIn(Dist.CLIENT)
 	public void lerpTo(double xOffset, double yOffset, double zOffset, float unused1, float unused2, int unused3, boolean flag) {
-		BlockPos blockpos = this.pos.offset(xOffset - this.getX(), yOffset - this.getY(), zOffset - this.getZ());
+		BlockPos blockpos = this.pos.offset(BlockPos.containing(xOffset - this.getX(), yOffset - this.getY(), zOffset - this.getZ()));
 		this.setPos((double) blockpos.getX(), (double) blockpos.getY(), (double) blockpos.getZ());
 	}
 
@@ -282,22 +282,26 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	@Override
 	protected void recalculateBoundingBox() {
 		if (this.direction != null) {
-			if (level.isClientSide) {
-				if (tickCount == 0) {
-					if (direction == Direction.NORTH)
-						this.pos = this.pos.offset(0, -0.5D, 0);
-					if (direction == Direction.EAST)
-						this.pos = this.pos.offset(0, -0.5D, 0);
-					if (direction == Direction.SOUTH)
-						this.pos = this.pos.offset(-0.5D, -0.5D, 0);
-					if (direction == Direction.WEST)
-						this.pos = this.pos.offset(0, -0.5D, -0.5D);
-				}
-			}
-
 			double posX = (double) this.pos.getX() + 0.5D;
 			double posY = (double) this.pos.getY() + 0.5D;
 			double posZ = (double) this.pos.getZ() + 0.5D;
+
+			if (level.isClientSide) {
+				if (tickCount == 0) {
+					if (direction == Direction.NORTH)
+						posY -= 1D;
+					if (direction == Direction.EAST)
+						posY -= 1D;
+					if (direction == Direction.SOUTH) {
+						posX -= 1D;
+						posY -= 1D;
+					}
+					if (direction == Direction.WEST) {
+						posY -= 1D;
+						posZ -= 1D;
+					}
+				}
+			}
 
 			double d3 = 0.46875D;
 			double offWidth = this.offs(this.getWidth());

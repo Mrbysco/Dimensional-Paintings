@@ -23,6 +23,8 @@ minecraft {
     runs {
         client {
             workingDirectory project.file('run')
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             // Recommended logging data for a userdev environment
             // property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
@@ -39,6 +41,8 @@ minecraft {
 
         server {
             workingDirectory project.file('run')
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             // Recommended logging data for a userdev environment
             // property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
@@ -55,6 +59,8 @@ minecraft {
 
         data {
             workingDirectory project.file('run')
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             // Recommended logging data for a userdev environment
             // property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
@@ -95,13 +101,13 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 
-    compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
-    compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
+//    compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
+//    compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
+//
+//    runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
 
-    runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
-
-    implementation fg.deobf("curse.maven:jade-324717:4434045") //Jade (WAILA)
-    implementation fg.deobf("curse.maven:TheOneProbe-245211:4159743") //The One probe (TOP)
+    implementation fg.deobf("curse.maven:jade-324717:4439089") //Jade (WAILA)
+    implementation fg.deobf("curse.maven:TheOneProbe-245211:4442439") //The One probe (TOP)
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..

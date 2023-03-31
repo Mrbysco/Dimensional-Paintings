@@ -18,7 +18,7 @@ public class PaintingTab {
 		MAIN_TAB = event.registerCreativeModeTab(new ResourceLocation(DimPaintings.MOD_ID, "tab"), builder ->
 				builder.icon(() -> new ItemStack(PaintingRegistry.OVERWORLD_PAINTING.get()))
 						.title(Component.translatable("itemGroup.dimpaintings"))
-						.displayItems((features, output, hasPermissions) -> {
+						.displayItems((displayParameters, output) -> {
 							List<ItemStack> stacks = PaintingRegistry.ITEMS.getEntries().stream().map(reg -> new ItemStack(reg.get())).toList();
 							output.acceptAll(stacks);
 						}));

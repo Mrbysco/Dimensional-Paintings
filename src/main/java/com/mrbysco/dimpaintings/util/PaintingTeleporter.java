@@ -75,7 +75,7 @@ public class PaintingTeleporter implements ITeleporter {
 						f1 = (float) Mth.wrapDegrees(Mth.atan2(vector3d1.z, vector3d1.x) * (double) (180F / (float) Math.PI) - 90.0D);
 					}
 					angle = f1;
-					blockpos = new BlockPos(vector3d.x, vector3d.y, vector3d.z);
+					blockpos = BlockPos.containing(vector3d.x, vector3d.y, vector3d.z);
 
 					flag2 = flag1;
 				} else if (blockpos != null) {
@@ -187,7 +187,7 @@ public class PaintingTeleporter implements ITeleporter {
 			double d3 = Math.min(2.9999872E7D, worldborder.getMaxZ() - 16.0D);
 			double d4 = DimensionType.getTeleportationScale(entity.level.dimensionType(), destLevel.dimensionType());
 			int maxY = DimensionalConfig.COMMON.netherMaxY.get();
-			return new BlockPos(Mth.clamp(entity.getX() * d4, d0, d2), Mth.clamp(entity.getY(), 2, maxY), Mth.clamp(entity.getZ() * d4, d1, d3));
+			return BlockPos.containing(Mth.clamp(entity.getX() * d4, d0, d2), Mth.clamp(entity.getY(), 2, maxY), Mth.clamp(entity.getZ() * d4, d1, d3));
 		}
 	}
 
