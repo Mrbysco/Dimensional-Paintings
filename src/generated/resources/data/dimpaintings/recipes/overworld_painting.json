@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "tag": "minecraft:logs"
+    },
+    "P": {
+      "item": "minecraft:painting"
+    }
+  },
+  "pattern": [
+    "DDD",
+    "DPD",
+    "DDD"
+  ],
+  "result": {
+    "item": "dimpaintings:overworld_painting"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "dimpaintings:item/base_painting",
+  "textures": {
+    "layer0": "dimpaintings:item/end_painting"
+  }
+}
