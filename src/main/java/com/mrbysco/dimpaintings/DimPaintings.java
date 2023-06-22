@@ -5,7 +5,6 @@ import com.mrbysco.dimpaintings.client.ClientHandler;
 import com.mrbysco.dimpaintings.config.DimensionalConfig;
 import com.mrbysco.dimpaintings.handler.CooldownHandler;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
-import com.mrbysco.dimpaintings.registry.PaintingTab;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -26,11 +25,10 @@ public class DimPaintings {
 		ModLoadingContext.get().registerConfig(Type.COMMON, DimensionalConfig.commonSpec);
 		eventBus.register(DimensionalConfig.class);
 
-		eventBus.register(new PaintingTab());
-
 		PaintingRegistry.ENTITY_TYPES.register(eventBus);
 		PaintingRegistry.DIM_PAINTINGS.register(eventBus);
 		PaintingRegistry.ITEMS.register(eventBus);
+		PaintingRegistry.CREATIVE_MODE_TABS.register(eventBus);
 
 		MinecraftForge.EVENT_BUS.register(new CooldownHandler());
 

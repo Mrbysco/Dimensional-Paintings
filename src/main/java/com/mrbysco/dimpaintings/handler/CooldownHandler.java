@@ -3,6 +3,7 @@ package com.mrbysco.dimpaintings.handler;
 import com.mrbysco.dimpaintings.config.DimensionalConfig;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.level.BlockEvent.PortalSpawnEvent;
@@ -14,7 +15,8 @@ public class CooldownHandler {
 		if (event.phase == TickEvent.Phase.START)
 			return;
 
-		if (!event.player.level.isClientSide && event.player.level.getGameTime() % 20 == 0 && DimensionalConfig.COMMON.teleportCooldown.get() > 0) {
+		Level level = event.player.level();
+		if (!level.isClientSide && level.getGameTime() % 20 == 0 && DimensionalConfig.COMMON.teleportCooldown.get() > 0) {
 			Player player = event.player;
 			CompoundTag persistentData = player.getPersistentData();
 			if (persistentData.contains("PaintingCooldown")) {

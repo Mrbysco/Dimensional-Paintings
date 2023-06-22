@@ -17,7 +17,7 @@ public class TeleportHelper {
 
 	public static void teleportToGivenDimension(Entity entityIn, ResourceLocation dimensionLocation) {
 		ResourceKey<Level> dimensionKey = ResourceKey.create(Registries.DIMENSION, dimensionLocation);
-		if (entityIn.level.dimension() != dimensionKey) {
+		if (entityIn.level().dimension() != dimensionKey) {
 			MinecraftServer server = entityIn.getServer();
 			ServerLevel destinationWorld = server != null ? server.getLevel(dimensionKey) : null;
 

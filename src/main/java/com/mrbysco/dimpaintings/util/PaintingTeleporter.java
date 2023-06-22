@@ -45,7 +45,7 @@ public class PaintingTeleporter implements ITeleporter {
 		int i = 200;
 		BlockPos blockpos = pos;
 		boolean isToOverworld = destLevel.dimension() == Level.OVERWORLD;
-		boolean isFromEnd = entity.level.dimension() == Level.END && isToOverworld;
+		boolean isFromEnd = entity.level().dimension() == Level.END && isToOverworld;
 		boolean isToEnd = destLevel.dimension() == Level.END;
 
 		if (isFromEnd || (isToOverworld && DimensionalConfig.COMMON.overworldToBed.get())) {
@@ -131,7 +131,11 @@ public class PaintingTeleporter implements ITeleporter {
 	private static PortalInfo moveToSafeCoords(ServerLevel serverLevel, Entity entity, BlockPos pos, boolean withGlass) {
 		if (serverLevel.isEmptyBlock(pos.below())) {
 			int distance;
-			for (distance = 1; serverLevel.getBlockState(pos.below(distance)).getBlock().isPossibleToRespawnInThis() && distance < 32; ++distance) {
+			for (distance = 1; distance < 32; ++distance) {
+				BlockState belowState = serverLevel.getBlockState(pos.below(distance));
+				if (belowState.getBlock().isPossibleToRespawnInThis(belowState)) {
+					break;
+				}
 			}
 
 			if (distance > 4) {
@@ -139,8 +143,10 @@ public class PaintingTeleporter implements ITeleporter {
 			}
 		} else {
 			BlockPos abovePos = pos.above(1);
-			if (serverLevel.getBlockState(pos.above()).getBlock().isPossibleToRespawnInThis() &&
-					serverLevel.getBlockState(pos.above(1)).getBlock().isPossibleToRespawnInThis()) {
+			BlockState aboveState = serverLevel.getBlockState(pos.above());
+			BlockState aboveState2 = serverLevel.getBlockState(abovePos);
+			if (aboveState.getBlock().isPossibleToRespawnInThis(aboveState) &&
+					aboveState2.getBlock().isPossibleToRespawnInThis(aboveState2)) {
 				return makePortalInfo(entity, abovePos.getX() + 0.5D, abovePos.getY(), abovePos.getZ() + 0.5D);
 			}
 			if (!serverLevel.isEmptyBlock(pos.below()) || !serverLevel.isEmptyBlock(pos)) {
@@ -177,7 +183,7 @@ public class PaintingTeleporter implements ITeleporter {
 
 	private BlockPos dimensionPosition(Entity entity, Level destLevel) {
 		boolean flag2 = destLevel.dimension() == Level.NETHER;
-		if (entity.level.dimension() != Level.NETHER && !flag2) {
+		if (entity.level().dimension() != Level.NETHER && !flag2) {
 			return entity.blockPosition();
 		} else {
 			WorldBorder worldborder = destLevel.getWorldBorder();
@@ -185,7 +191,7 @@ public class PaintingTeleporter implements ITeleporter {
 			double d1 = Math.max(-2.9999872E7D, worldborder.getMinZ() + 16.0D);
 			double d2 = Math.min(2.9999872E7D, worldborder.getMaxX() - 16.0D);
 			double d3 = Math.min(2.9999872E7D, worldborder.getMaxZ() - 16.0D);
-			double d4 = DimensionType.getTeleportationScale(entity.level.dimensionType(), destLevel.dimensionType());
+			double d4 = DimensionType.getTeleportationScale(entity.level().dimensionType(), destLevel.dimensionType());
 			int maxY = DimensionalConfig.COMMON.netherMaxY.get();
 			return BlockPos.containing(Mth.clamp(entity.getX() * d4, d0, d2), Mth.clamp(entity.getY(), 2, maxY), Mth.clamp(entity.getZ() * d4, d1, d3));
 		}

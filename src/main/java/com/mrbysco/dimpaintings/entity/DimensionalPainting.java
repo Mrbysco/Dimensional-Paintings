@@ -61,7 +61,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 		this.setDimensionType(paintingType);
 		this.setDirection(direction);
 
-		if (!this.level.isClientSide) {
+		if (!this.level().isClientSide) {
 			ServerLevel serverLevel = (ServerLevel) level;
 			PaintingWorldData worldData = PaintingWorldData.get(serverLevel);
 			worldData.addPositionToDimension(level.dimension().location(), getPos(), getDirection());
@@ -100,7 +100,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 		if (this.isInvulnerableTo(damageSource)) {
 			return false;
 		} else {
-			if (isAlive() && !this.level.isClientSide) {
+			if (isAlive() && !this.level().isClientSide) {
 				this.removeStoredPosition();
 				this.kill();
 				this.markHurt();
@@ -112,7 +112,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public void move(MoverType type, Vec3 position) {
-		if (!this.level.isClientSide && isAlive() && position.lengthSqr() > 0.0D) {
+		if (!this.level().isClientSide && isAlive() && position.lengthSqr() > 0.0D) {
 			this.removeStoredPosition();
 			this.kill();
 			this.dropItem((Entity) null);
@@ -121,7 +121,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public void push(double posX, double posY, double posZ) {
-		if (!this.level.isClientSide && isAlive() && posX * posX + posY * posY + posZ * posZ > 0.0D) {
+		if (!this.level().isClientSide && isAlive() && posX * posX + posY * posY + posZ * posZ > 0.0D) {
 			this.removeStoredPosition();
 			this.kill();
 			this.dropItem((Entity) null);
@@ -130,9 +130,9 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	private void removeStoredPosition() {
-		ServerLevel serverWorld = (ServerLevel) level;
+		ServerLevel serverWorld = (ServerLevel) this.level();
 		PaintingWorldData worldData = PaintingWorldData.get(serverWorld);
-		worldData.removePositionFromDimension(level.dimension().location(), getPos());
+		worldData.removePositionFromDimension(this.level().dimension().location(), getPos());
 	}
 
 	@Override
@@ -144,13 +144,13 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	public void tick() {
 		super.tick();
 
-		if (!level.isClientSide && isAlive()) {
-			List<Entity> nearbyEntities = this.level.getEntitiesOfClass(Entity.class, getBoundingBox());
+		if (!this.level().isClientSide && isAlive()) {
+			List<Entity> nearbyEntities = this.level().getEntitiesOfClass(Entity.class, getBoundingBox());
 			if (!nearbyEntities.isEmpty()) {
 				for (Iterator<Entity> iterator = nearbyEntities.iterator(); iterator.hasNext(); ) {
 					Entity entityIn = iterator.next();
 					if (entityIn != this && !(entityIn instanceof FakePlayer) && !(entityIn instanceof Player)) {
-						boolean flag = entityIn.distanceTo(this) < 1 && !entityIn.isOnGround();
+						boolean flag = entityIn.distanceTo(this) < 1 && !entityIn.onGround();
 						if (flag && !entityIn.isPassenger() && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canChangeDimensions()) {
 							entityIn.teleportTo((int) this.getX(), (int) this.getY(), (int) this.getZ());
 							TeleportHelper.teleportToGivenDimension(entityIn, this.dimensionType.getDimensionLocation());
@@ -165,8 +165,8 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	@Override
 	public void playerTouch(Player player) {
 		super.playerTouch(player);
-		if (!level.isClientSide && isAlive()) {
-			boolean flag = player.distanceTo(this) < 1 && !player.isOnGround();
+		if (!this.level().isClientSide && isAlive()) {
+			boolean flag = player.distanceTo(this) < 1 && !player.onGround();
 			if (flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canChangeDimensions()) {
 				boolean cooldownFlag = DimensionalConfig.COMMON.teleportCooldown.get() == 0;
 				if (cooldownFlag || !player.getPersistentData().contains("PaintingCooldown")) {
@@ -237,7 +237,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public void dropItem(@Nullable Entity entity) {
-		if (this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+		if (this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
 			this.playSound(SoundEvents.PAINTING_BREAK, 1.0F, 1.0F);
 			if (entity instanceof Player player) {
 				if (player.getAbilities().instabuild) {
@@ -286,7 +286,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 			double posY = (double) this.pos.getY() + 0.5D;
 			double posZ = (double) this.pos.getZ() + 0.5D;
 
-			if (level.isClientSide) {
+			if (this.level().isClientSide) {
 				if (tickCount == 0) {
 					if (direction == Direction.NORTH)
 						posY -= 1D;
@@ -340,7 +340,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 
 	@Override
 	public boolean survives() {
-		if (!this.level.noCollision(this)) {
+		if (!this.level().noCollision(this)) {
 			return false;
 		} else {
 			int i = Math.max(1, this.getWidth() / 16);
@@ -354,16 +354,16 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 					int i1 = (i - 1) / -2;
 					int j1 = (j - 1) / -2;
 					blockpos$mutable.set(blockpos).move(direction, k + i1).move(Direction.UP, l + j1);
-					BlockState blockstate = this.level.getBlockState(blockpos$mutable);
-					if (net.minecraft.world.level.block.Block.canSupportCenter(this.level, blockpos$mutable, this.direction))
+					BlockState blockstate = this.level().getBlockState(blockpos$mutable);
+					if (net.minecraft.world.level.block.Block.canSupportCenter(this.level(), blockpos$mutable, this.direction))
 						continue;
-					if (!blockstate.getMaterial().isSolid() && !DiodeBlock.isDiode(blockstate)) {
+					if (!blockstate.isSolid() && !DiodeBlock.isDiode(blockstate)) {
 						return false;
 					}
 				}
 			}
 
-			return this.level.getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty();
+			return this.level().getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty();
 		}
 	}
 

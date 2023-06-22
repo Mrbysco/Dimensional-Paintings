@@ -94,7 +94,7 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 					k1 = Mth.floor(dimensionalPainting.getZ() + (double) ((f15 + f16) / 2.0F / 16.0F));
 				}
 
-				int l1 = LevelRenderer.getLightColor(dimensionalPainting.level, new BlockPos(i1, j1, k1));
+				int l1 = LevelRenderer.getLightColor(dimensionalPainting.level(), new BlockPos(i1, j1, k1));
 				float f19 = atlasSprite.getU(d0 * (double) (i - k));
 				float f20 = atlasSprite.getU(d0 * (double) (i - (k + 1)));
 				float f21 = atlasSprite.getV(d1 * (double) (j - l));
