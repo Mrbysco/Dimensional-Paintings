@@ -10,6 +10,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.DeferredRegister;
@@ -33,6 +34,7 @@ public class PaintingRegistry {
 	public static final RegistryObject<Item> END_PAINTING = ITEMS.register("end_painting", () -> new DimensionalPaintingItem(new Item.Properties(), END));
 
 	public static final RegistryObject<CreativeModeTab> MAIN_TAB = CREATIVE_MODE_TABS.register("tab", () -> CreativeModeTab.builder()
+			.withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
 			.icon(() -> new ItemStack(PaintingRegistry.OVERWORLD_PAINTING.get()))
 			.title(Component.translatable("itemGroup.dimpaintings"))
 			.displayItems((displayParameters, output) -> {
