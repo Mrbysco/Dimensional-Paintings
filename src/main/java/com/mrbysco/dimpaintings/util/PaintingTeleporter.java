@@ -132,8 +132,9 @@ public class PaintingTeleporter implements ITeleporter {
 		if (serverLevel.isEmptyBlock(pos.below())) {
 			int distance;
 			for (distance = 1; distance < 32; ++distance) {
-				BlockState belowState = serverLevel.getBlockState(pos.below(distance));
-				if (belowState.getBlock().isPossibleToRespawnInThis(belowState)) {
+				BlockPos checkPos = pos.below(distance);
+				BlockState belowState = serverLevel.getBlockState(checkPos);
+				if (belowState.entityCanStandOn(serverLevel, checkPos, entity)) {
 					break;
 				}
 			}
