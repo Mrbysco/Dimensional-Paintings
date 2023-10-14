@@ -1,1 +1,1 @@
-* Fix creative tab ordering
+* Fix platforms not being placed correctly
