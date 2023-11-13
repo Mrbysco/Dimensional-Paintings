@@ -2,24 +2,25 @@ package com.mrbysco.dimpaintings.datagen;
 
 import com.mrbysco.dimpaintings.DimPaintings;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.client.model.generators.ItemModelProvider;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.common.data.LanguageProvider;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.common.data.LanguageProvider;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.concurrent.CompletableFuture;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class PaintingDatagen {
@@ -27,10 +28,11 @@ public class PaintingDatagen {
 	public static void gatherData(GatherDataEvent event) {
 		DataGenerator generator = event.getGenerator();
 		PackOutput packOutput = generator.getPackOutput();
+		CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
 		ExistingFileHelper helper = event.getExistingFileHelper();
 
 		if (event.includeServer()) {
-			generator.addProvider(true, new PaintingRecipeProvider(packOutput));
+			generator.addProvider(true, new PaintingRecipeProvider(packOutput, lookupProvider));
 		}
 		if (event.includeClient()) {
 			generator.addProvider(true, new PaintingLanguageProvider(packOutput));
@@ -39,12 +41,12 @@ public class PaintingDatagen {
 	}
 
 	private static class PaintingRecipeProvider extends RecipeProvider {
-		public PaintingRecipeProvider(PackOutput packOutput) {
-			super(packOutput);
+		public PaintingRecipeProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+			super(packOutput, lookupProvider);
 		}
 
 		@Override
-		protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
+		protected void buildRecipes(RecipeOutput consumer) {
 			ShapedRecipeBuilder.shaped(RecipeCategory.TRANSPORTATION, PaintingRegistry.OVERWORLD_PAINTING.get())
 					.pattern("DDD")
 					.pattern("DPD")
@@ -103,7 +105,7 @@ public class PaintingDatagen {
 
 		@Override
 		protected void registerModels() {
-			PaintingRegistry.ITEMS.getEntries().stream()
+			PaintingRegistry.ITEMS.getEntries()
 					.forEach(item -> {
 						String path = Objects.requireNonNull(item.getId()).getPath();
 						singleTexture(path, modLoc("item/base_painting"),

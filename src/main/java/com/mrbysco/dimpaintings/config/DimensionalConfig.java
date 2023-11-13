@@ -1,11 +1,11 @@
 package com.mrbysco.dimpaintings.config;
 
 import com.mrbysco.dimpaintings.DimPaintings;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
-import net.minecraftforge.common.ForgeConfigSpec.IntValue;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.BooleanValue;
+import net.neoforged.neoforge.common.ModConfigSpec.IntValue;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class DimensionalConfig {
@@ -15,7 +15,7 @@ public class DimensionalConfig {
 		public final IntValue teleportCooldown;
 		public final BooleanValue disableNetherPortal;
 
-		Common(ForgeConfigSpec.Builder builder) {
+		Common(ModConfigSpec.Builder builder) {
 			builder.comment("General settings")
 					.push("General");
 
@@ -41,11 +41,11 @@ public class DimensionalConfig {
 		}
 	}
 
-	public static final ForgeConfigSpec commonSpec;
+	public static final ModConfigSpec commonSpec;
 	public static final Common COMMON;
 
 	static {
-		final Pair<Common, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Common::new);
+		final Pair<Common, ModConfigSpec> specPair = new ModConfigSpec.Builder().configure(Common::new);
 		commonSpec = specPair.getRight();
 		COMMON = specPair.getLeft();
 	}

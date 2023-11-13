@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.TextureAtlasHolder;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 
 public class DimensionalPaintingTextureManager extends TextureAtlasHolder {
 	public static final ResourceLocation LOCATION_DIMENSIONAL_TEXTURES = new ResourceLocation(DimPaintings.MOD_ID, "textures/atlas/dimensional_paintings.png");

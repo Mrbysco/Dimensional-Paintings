@@ -2,11 +2,11 @@ package com.mrbysco.dimpaintings.registry;
 
 import com.mrbysco.dimpaintings.DimPaintings;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.NewRegistryEvent;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.registries.IForgeRegistry;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import java.util.function.Supplier;
 

@@ -44,27 +44,29 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 				.atlasLocation();
 	}
 
-	private void renderDimensionalPainting(PoseStack poseStack, VertexConsumer consumer, DimensionalPainting dimensionalPainting, int p_229122_4_, int p_229122_5_, TextureAtlasSprite atlasSprite, TextureAtlasSprite atlasSprite1) {
+	private void renderDimensionalPainting(PoseStack poseStack, VertexConsumer consumer,
+										   DimensionalPainting dimensionalPainting, int width, int height,
+										   TextureAtlasSprite paintingSprite, TextureAtlasSprite backSprite) {
 		PoseStack.Pose last = poseStack.last();
 		Matrix4f pose = last.pose();
 		Matrix3f normal = last.normal();
-		float f = (float) (-p_229122_4_) / 2.0F;
-		float f1 = (float) (-p_229122_5_) / 2.0F;
+		float f = (float) (-width) / 2.0F;
+		float f1 = (float) (-height) / 2.0F;
 		float f2 = 0.5F;
-		float f3 = atlasSprite1.getU0();
-		float f4 = atlasSprite1.getU1();
-		float f5 = atlasSprite1.getV0();
-		float f6 = atlasSprite1.getV1();
-		float f7 = atlasSprite1.getU0();
-		float f8 = atlasSprite1.getU1();
-		float f9 = atlasSprite1.getV0();
-		float f10 = atlasSprite1.getV(1.0D);
-		float f11 = atlasSprite1.getU0();
-		float f12 = atlasSprite1.getU(1.0D);
-		float f13 = atlasSprite1.getV0();
-		float f14 = atlasSprite1.getV1();
-		int i = p_229122_4_ / 16;
-		int j = p_229122_5_ / 16;
+		float f3 = backSprite.getU0();
+		float f4 = backSprite.getU1();
+		float f5 = backSprite.getV0();
+		float f6 = backSprite.getV1();
+		float f7 = backSprite.getU0();
+		float f8 = backSprite.getU1();
+		float f9 = backSprite.getV0();
+		float f10 = backSprite.getV(0.0625F);
+		float f11 = backSprite.getU0();
+		float f12 = backSprite.getU(0.0625F);
+		float f13 = backSprite.getV0();
+		float f14 = backSprite.getV1();
+		int i = width / 16;
+		int j = height / 16;
 		double d0 = 16.0D / (double) i;
 		double d1 = 16.0D / (double) j;
 
@@ -95,10 +97,10 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 				}
 
 				int l1 = LevelRenderer.getLightColor(dimensionalPainting.level(), new BlockPos(i1, j1, k1));
-				float f19 = atlasSprite.getU(d0 * (double) (i - k));
-				float f20 = atlasSprite.getU(d0 * (double) (i - (k + 1)));
-				float f21 = atlasSprite.getV(d1 * (double) (j - l));
-				float f22 = atlasSprite.getV(d1 * (double) (j - (l + 1)));
+				float f19 = paintingSprite.getU((float) (d0 * (double) (i - k)));
+				float f20 = paintingSprite.getU((float) (d0 * (double) (i - (k + 1))));
+				float f21 = paintingSprite.getV((float) (d1 * (double) (j - l)));
+				float f22 = paintingSprite.getV((float) (d1 * (double) (j - (l + 1))));
 				this.vertex(pose, normal, consumer, f15, f18, f20, f21, -f2, 0, 0, -1, l1);
 				this.vertex(pose, normal, consumer, f16, f18, f19, f21, -f2, 0, 0, -1, l1);
 				this.vertex(pose, normal, consumer, f16, f17, f19, f22, -f2, 0, 0, -1, l1);

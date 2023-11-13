@@ -4,14 +4,13 @@ import com.mrbysco.dimpaintings.config.DimensionalConfig;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.TickEvent.PlayerTickEvent;
-import net.minecraftforge.event.level.BlockEvent.PortalSpawnEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.level.BlockEvent.PortalSpawnEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 public class CooldownHandler {
 	@SubscribeEvent
-	public void onPlayerTick(PlayerTickEvent event) {
+	public void onPlayerTick(TickEvent.PlayerTickEvent event) {
 		if (event.phase == TickEvent.Phase.START)
 			return;
 

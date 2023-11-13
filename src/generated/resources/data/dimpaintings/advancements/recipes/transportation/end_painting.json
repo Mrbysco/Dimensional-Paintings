@@ -34,9 +34,9 @@
   },
   "requirements": [
     [
+      "has_the_recipe",
       "has_painting",
-      "has_ender_eye",
-      "has_the_recipe"
+      "has_ender_eye"
     ]
   ],
   "rewards": {

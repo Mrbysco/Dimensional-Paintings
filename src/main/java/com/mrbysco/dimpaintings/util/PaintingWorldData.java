@@ -109,6 +109,6 @@ public class PaintingWorldData extends SavedData {
 		ServerLevel overworld = world.getServer().getLevel(Level.OVERWORLD);
 
 		DimensionDataStorage storage = overworld.getDataStorage();
-		return storage.computeIfAbsent(PaintingWorldData::load, PaintingWorldData::new, DATA_NAME);
+		return storage.computeIfAbsent(new SavedData.Factory<>(PaintingWorldData::new, PaintingWorldData::load), DATA_NAME);
 	}
 }
