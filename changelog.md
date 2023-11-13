@@ -1,1 +1,1 @@
-* Fix platforms not being placed correctly
+* Initial update to 1.20.2
