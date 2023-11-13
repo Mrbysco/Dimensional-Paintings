@@ -39,14 +39,10 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 	}
 
 	public ResourceLocation getTextureLocation(DimensionalPainting dimensionalPainting) {
-		return DimensionalPaintingTextureManager.instance()
-				.getBackSprite()
-				.atlasLocation();
+		return DimensionalPaintingTextureManager.instance().getBackSprite().atlasLocation();
 	}
 
-	private void renderDimensionalPainting(PoseStack poseStack, VertexConsumer consumer,
-										   DimensionalPainting dimensionalPainting, int width, int height,
-										   TextureAtlasSprite paintingSprite, TextureAtlasSprite backSprite) {
+	private void renderDimensionalPainting(PoseStack poseStack, VertexConsumer consumer, DimensionalPainting dimensionalPainting, int width, int height, TextureAtlasSprite paintingSprite, TextureAtlasSprite backSprite) {
 		PoseStack.Pose last = poseStack.last();
 		Matrix4f pose = last.pose();
 		Matrix3f normal = last.normal();
@@ -67,8 +63,8 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 		float f14 = backSprite.getV1();
 		int i = width / 16;
 		int j = height / 16;
-		double d0 = 16.0D / (double) i;
-		double d1 = 16.0D / (double) j;
+		double d0 = 1.0 / (double) i;
+		double d1 = 1.0 / (double) j;
 
 		for (int k = 0; k < i; ++k) {
 			for (int l = 0; l < j; ++l) {
@@ -76,9 +72,9 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 				float f16 = f + (float) (k * 16);
 				float f17 = f1 + (float) ((l + 1) * 16);
 				float f18 = f1 + (float) (l * 16);
-				int i1 = Mth.floor(dimensionalPainting.getX());
+				int i1 = dimensionalPainting.getBlockX();
 				int j1 = Mth.floor(dimensionalPainting.getY() + (double) ((f17 + f18) / 2.0F / 16.0F));
-				int k1 = Mth.floor(dimensionalPainting.getZ());
+				int k1 = dimensionalPainting.getBlockZ();
 				Direction direction = dimensionalPainting.getDirection();
 				if (direction == Direction.NORTH) {
 					i1 = Mth.floor(dimensionalPainting.getX() + (double) ((f15 + f16) / 2.0F / 16.0F));
@@ -105,10 +101,10 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 				this.vertex(pose, normal, consumer, f16, f18, f19, f21, -f2, 0, 0, -1, l1);
 				this.vertex(pose, normal, consumer, f16, f17, f19, f22, -f2, 0, 0, -1, l1);
 				this.vertex(pose, normal, consumer, f15, f17, f20, f22, -f2, 0, 0, -1, l1);
-				this.vertex(pose, normal, consumer, f15, f17, f3, f5, f2, 0, 0, 1, l1);
-				this.vertex(pose, normal, consumer, f16, f17, f4, f5, f2, 0, 0, 1, l1);
-				this.vertex(pose, normal, consumer, f16, f18, f4, f6, f2, 0, 0, 1, l1);
-				this.vertex(pose, normal, consumer, f15, f18, f3, f6, f2, 0, 0, 1, l1);
+				this.vertex(pose, normal, consumer, f15, f17, f4, f5, f2, 0, 0, 1, l1);
+				this.vertex(pose, normal, consumer, f16, f17, f3, f5, f2, 0, 0, 1, l1);
+				this.vertex(pose, normal, consumer, f16, f18, f3, f6, f2, 0, 0, 1, l1);
+				this.vertex(pose, normal, consumer, f15, f18, f4, f6, f2, 0, 0, 1, l1);
 				this.vertex(pose, normal, consumer, f15, f17, f7, f9, -f2, 0, 1, 0, l1);
 				this.vertex(pose, normal, consumer, f16, f17, f8, f9, -f2, 0, 1, 0, l1);
 				this.vertex(pose, normal, consumer, f16, f17, f8, f10, f2, 0, 1, 0, l1);
