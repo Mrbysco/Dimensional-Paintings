@@ -10,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -42,7 +43,6 @@ import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.entity.IEntityAdditionalSpawnData;
 import net.neoforged.neoforge.network.NetworkHooks;
 import net.neoforged.neoforge.network.PlayMessages.SpawnEntity;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -71,10 +71,10 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	public DimensionalPainting(SpawnEntity spawnEntity, Level level) {
 		this(level, new BlockPos((int) spawnEntity.getPosX(), (int) spawnEntity.getPosY(), (int) spawnEntity.getPosZ()),
 				Direction.from2DDataValue(spawnEntity.getAdditionalData().readByte()),
-				PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getValue(ResourceLocation.tryParse(spawnEntity.getAdditionalData().readUtf())));
+				PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get(ResourceLocation.tryParse(spawnEntity.getAdditionalData().readUtf())));
 
 		FriendlyByteBuf additionalData = spawnEntity.getAdditionalData();
-		Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
+		Item item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(additionalData.readUtf()));
 		if (item != null) {
 			this.setItem(new ItemStack(item));
 		}
@@ -195,7 +195,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public void addAdditionalSaveData(CompoundTag compoundNBT) {
-		compoundNBT.putString("Dimension", PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getKey(this.dimensionType).toString());
+		compoundNBT.putString("Dimension", PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(this.dimensionType).toString());
 		compoundNBT.putByte("Facing", (byte) this.direction.get2DDataValue());
 		ItemStack itemstack = this.getItemRaw();
 		if (!itemstack.isEmpty()) {
@@ -205,7 +205,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public void readAdditionalSaveData(CompoundTag compoundNBT) {
-		this.dimensionType = PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getValue(ResourceLocation.tryParse(compoundNBT.getString("Dimension")));
+		this.dimensionType = PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get(ResourceLocation.tryParse(compoundNBT.getString("Dimension")));
 		this.direction = Direction.from2DDataValue(compoundNBT.getByte("Facing"));
 		super.readAdditionalSaveData(compoundNBT);
 		this.setDirection(this.direction);
@@ -271,8 +271,8 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	@Override
 	public void writeSpawnData(FriendlyByteBuf buffer) {
 		buffer.writeByte((byte) this.direction.get2DDataValue());
-		buffer.writeUtf(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getKey(this.dimensionType).toString());
-		buffer.writeUtf(ForgeRegistries.ITEMS.getKey(getItem().getItem()).toString());
+		buffer.writeUtf(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(this.dimensionType).toString());
+		buffer.writeUtf(BuiltInRegistries.ITEM.getKey(getItem().getItem()).toString());
 	}
 
 	@Override

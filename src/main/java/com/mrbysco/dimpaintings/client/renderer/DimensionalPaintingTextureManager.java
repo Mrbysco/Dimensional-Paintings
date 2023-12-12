@@ -22,7 +22,10 @@ public class DimensionalPaintingTextureManager extends TextureAtlasHolder {
 	}
 
 	public TextureAtlasSprite get(DimensionPaintingType paintingType) {
-		return this.getSprite(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getKey(paintingType));
+		var key = PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(paintingType);
+		if (key == null)
+			return getBackSprite();
+		return this.getSprite(key);
 	}
 
 	public TextureAtlasSprite getBackSprite() {
