@@ -43,6 +43,5 @@
     "recipes": [
       "dimpaintings:end_painting"
     ]
-  },
-  "sends_telemetry_event": false
+  }
 }

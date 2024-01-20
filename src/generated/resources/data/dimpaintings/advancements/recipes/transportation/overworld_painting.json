@@ -41,6 +41,5 @@
     "recipes": [
       "dimpaintings:overworld_painting"
     ]
-  },
-  "sends_telemetry_event": false
+  }
 }

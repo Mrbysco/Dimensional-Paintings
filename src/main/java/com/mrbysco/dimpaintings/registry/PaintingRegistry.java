@@ -45,8 +45,7 @@ public class PaintingRegistry {
 	public static final Supplier<EntityType<DimensionalPainting>> DIMENSIONAL_PAINTING = ENTITY_TYPES.register("dimensional_painting", () ->
 			register("dimensional_painting", EntityType.Builder.<DimensionalPainting>of(DimensionalPainting::new, MobCategory.MISC)
 					.sized(0.5F, 0.5F)
-					.clientTrackingRange(10).updateInterval(Integer.MAX_VALUE)
-					.setCustomClientFactory(DimensionalPainting::new)));
+					.clientTrackingRange(10).updateInterval(Integer.MAX_VALUE)));
 
 	public static <T extends Entity> EntityType<T> register(String id, EntityType.Builder<T> builder) {
 		return builder.build(id);

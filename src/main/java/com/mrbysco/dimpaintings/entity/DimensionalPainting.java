@@ -1,8 +1,10 @@
 package com.mrbysco.dimpaintings.entity;
 
+import com.mrbysco.dimpaintings.DimPaintings;
 import com.mrbysco.dimpaintings.config.DimensionalConfig;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
+import com.mrbysco.dimpaintings.registry.PaintingSerializers;
 import com.mrbysco.dimpaintings.registry.PaintingTypeRegistry;
 import com.mrbysco.dimpaintings.util.PaintingWorldData;
 import com.mrbysco.dimpaintings.util.TeleportHelper;
@@ -14,8 +16,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -37,20 +37,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.entity.IEntityAdditionalSpawnData;
-import net.neoforged.neoforge.network.NetworkHooks;
-import net.neoforged.neoforge.network.PlayMessages.SpawnEntity;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 
-public class DimensionalPainting extends HangingEntity implements IEntityAdditionalSpawnData {
+public class DimensionalPainting extends HangingEntity implements IEntityWithComplexSpawn {
 	private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK = SynchedEntityData.defineId(DimensionalPainting.class, EntityDataSerializers.ITEM_STACK);
-	public DimensionPaintingType dimensionType;
+	private static final EntityDataAccessor<DimensionPaintingType> DIMENSION_TYPE = SynchedEntityData.defineId(DimensionalPainting.class, PaintingSerializers.DIMENSION_TYPE.get());
 
 	public DimensionalPainting(EntityType<? extends DimensionalPainting> entityType, Level world) {
 		super(entityType, world);
@@ -68,26 +64,9 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 		}
 	}
 
-	public DimensionalPainting(SpawnEntity spawnEntity, Level level) {
-		this(level, new BlockPos((int) spawnEntity.getPosX(), (int) spawnEntity.getPosY(), (int) spawnEntity.getPosZ()),
-				Direction.from2DDataValue(spawnEntity.getAdditionalData().readByte()),
-				PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get(ResourceLocation.tryParse(spawnEntity.getAdditionalData().readUtf())));
-
-		FriendlyByteBuf additionalData = spawnEntity.getAdditionalData();
-		Item item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(additionalData.readUtf()));
-		if (item != null) {
-			this.setItem(new ItemStack(item));
-		}
-	}
-
 	@Override
 	protected void setDirection(Direction dir) {
 		super.setDirection(dir);
-	}
-
-	@Override
-	public Packet<ClientGamePacketListener> getAddEntityPacket() {
-		return NetworkHooks.getEntitySpawningPacket(this);
 	}
 
 	@Override
@@ -152,8 +131,10 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 					if (entityIn != this && !(entityIn instanceof FakePlayer) && !(entityIn instanceof Player)) {
 						boolean flag = entityIn.distanceTo(this) < 1 && !entityIn.onGround();
 						if (flag && !entityIn.isPassenger() && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canChangeDimensions()) {
-							entityIn.teleportTo((int) this.getX(), (int) this.getY(), (int) this.getZ());
-							TeleportHelper.teleportToGivenDimension(entityIn, this.dimensionType.getDimensionLocation());
+							if (this.getDimensionType() != null) {
+								entityIn.teleportTo((int) this.getX(), (int) this.getY(), (int) this.getZ());
+								TeleportHelper.teleportToGivenDimension(entityIn, this.getDimensionType().getDimensionLocation());
+							}
 							return;
 						}
 					}
@@ -170,11 +151,13 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 			if (flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canChangeDimensions()) {
 				boolean cooldownFlag = DimensionalConfig.COMMON.teleportCooldown.get() == 0;
 				if (cooldownFlag || !player.getPersistentData().contains("PaintingCooldown")) {
-					if (!cooldownFlag) {
-						player.getPersistentData().putInt("PaintingCooldown", DimensionalConfig.COMMON.teleportCooldown.get());
+					if (this.getDimensionType() != null) {
+						if (!cooldownFlag) {
+							player.getPersistentData().putInt("PaintingCooldown", DimensionalConfig.COMMON.teleportCooldown.get());
+						}
+						player.teleportTo((int) this.getX(), (int) this.getY(), (int) this.getZ());
+						TeleportHelper.teleportToGivenDimension(player, this.getDimensionType().getDimensionLocation());
 					}
-					player.teleportTo((int) this.getX(), (int) this.getY(), (int) this.getZ());
-					TeleportHelper.teleportToGivenDimension(player, this.dimensionType.getDimensionLocation());
 				} else {
 					player.displayClientMessage(Component.translatable("dimpaintings.cooldown").withStyle(ChatFormatting.GOLD), true);
 				}
@@ -184,18 +167,30 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 
 	protected void defineSynchedData() {
 		this.getEntityData().define(DATA_ITEM_STACK, ItemStack.EMPTY);
+		this.getEntityData().define(DIMENSION_TYPE, PaintingRegistry.OVERWORLD.get());
+	}
+
+	@Override
+	public void onSyncedDataUpdated(EntityDataAccessor<?> pKey) {
+		if (DIMENSION_TYPE.equals(pKey)) {
+			this.recalculateBoundingBox();
+		}
 	}
 
 	public void setDimensionType(DimensionPaintingType type) {
-		this.dimensionType = type;
+		if (type == null) {
+			DimPaintings.LOGGER.error("Can not set Dimension type to null");
+		} else {
+			this.entityData.set(DIMENSION_TYPE, type);
+		}
 	}
 
 	public DimensionPaintingType getDimensionType() {
-		return dimensionType;
+		return this.entityData.get(DIMENSION_TYPE);
 	}
 
 	public void addAdditionalSaveData(CompoundTag compoundNBT) {
-		compoundNBT.putString("Dimension", PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(this.dimensionType).toString());
+		compoundNBT.putString("Dimension", PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(this.getDimensionType()).toString());
 		compoundNBT.putByte("Facing", (byte) this.direction.get2DDataValue());
 		ItemStack itemstack = this.getItemRaw();
 		if (!itemstack.isEmpty()) {
@@ -205,7 +200,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public void readAdditionalSaveData(CompoundTag compoundNBT) {
-		this.dimensionType = PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get(ResourceLocation.tryParse(compoundNBT.getString("Dimension")));
+		this.setDimensionType(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get(ResourceLocation.tryParse(compoundNBT.getString("Dimension"))));
 		this.direction = Direction.from2DDataValue(compoundNBT.getByte("Facing"));
 		super.readAdditionalSaveData(compoundNBT);
 		this.setDirection(this.direction);
@@ -229,11 +224,11 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public int getWidth() {
-		return this.dimensionType == null ? 1 : this.dimensionType.getWidth();
+		return this.getDimensionType() == null ? 1 : this.getDimensionType().getWidth();
 	}
 
 	public int getHeight() {
-		return this.dimensionType == null ? 1 : this.dimensionType.getHeight();
+		return this.getDimensionType() == null ? 1 : this.getDimensionType().getHeight();
 	}
 
 	public void dropItem(@Nullable Entity entity) {
@@ -258,73 +253,87 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 		this.playSound(SoundEvents.PAINTING_PLACE, 1.0F, 1.0F);
 	}
 
-	public void moveTo(double posX, double posY, double posZ, float unused1, float unused2) {
-		this.setPos(posX, posY, posZ);
+	/**
+	 * Sets the location and rotation of the entity in the world.
+	 */
+	@Override
+	public void moveTo(double pX, double pY, double pZ, float pYaw, float pPitch) {
+		this.setPos(pX, pY, pZ);
 	}
 
-	@OnlyIn(Dist.CLIENT)
-	public void lerpTo(double xOffset, double yOffset, double zOffset, float unused1, float unused2, int unused3, boolean flag) {
-		BlockPos blockpos = this.pos.offset(BlockPos.containing(xOffset - this.getX(), yOffset - this.getY(), zOffset - this.getZ()));
-		this.setPos((double) blockpos.getX(), (double) blockpos.getY(), (double) blockpos.getZ());
+	@Override
+	public void lerpTo(double pX, double pY, double pZ, float pYRot, float pXRot, int pSteps) {
+		this.setPos(pX, pY, pZ);
+	}
+
+	@Override
+	public Vec3 trackingPosition() {
+		return Vec3.atLowerCornerOf(this.pos);
 	}
 
 	@Override
 	public void writeSpawnData(FriendlyByteBuf buffer) {
 		buffer.writeByte((byte) this.direction.get2DDataValue());
-		buffer.writeUtf(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(this.dimensionType).toString());
+		buffer.writeUtf(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(this.getDimensionType()).toString());
 		buffer.writeUtf(BuiltInRegistries.ITEM.getKey(getItem().getItem()).toString());
 	}
 
 	@Override
 	public void readSpawnData(FriendlyByteBuf additionalData) {
+		this.setDirection(Direction.from2DDataValue(additionalData.readByte()));
+		this.setDimensionType(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get(ResourceLocation.tryParse(additionalData.readUtf())));
+		Item item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(additionalData.readUtf()));
+		if (item != null) {
+			this.setItem(new ItemStack(item));
+		}
 	}
 
 	@Override
 	protected void recalculateBoundingBox() {
 		if (this.direction != null) {
-			double posX = (double) this.pos.getX() + 0.5D;
-			double posY = (double) this.pos.getY() + 0.5D;
-			double posZ = (double) this.pos.getZ() + 0.5D;
+			double posX = (double) this.pos.getX() + 0.5;
+			double posY = (double) this.pos.getY() + 0.5;
+			double posZ = (double) this.pos.getZ() + 0.5;
 
 			if (this.level().isClientSide) {
 				if (tickCount == 0) {
 					if (direction == Direction.NORTH)
-						posY -= 1D;
+						posY -= 1;
 					if (direction == Direction.EAST)
-						posY -= 1D;
+						posY -= 1;
 					if (direction == Direction.SOUTH) {
-						posX -= 1D;
-						posY -= 1D;
+						posX -= 1;
+						posY -= 1;
 					}
 					if (direction == Direction.WEST) {
-						posY -= 1D;
-						posZ -= 1D;
+						posY -= 1;
+						posZ -= 1;
 					}
 				}
 			}
 
-			double d3 = 0.46875D;
+			double d3 = 0.46875;
 			double offWidth = this.offs(this.getWidth());
 			double offHeight = this.offs(this.getHeight());
-			posX = posX - (double) this.direction.getStepX() * d3;
-			posZ = posZ - (double) this.direction.getStepZ() * d3;
-			posY = posY + offHeight;
+			posX -= (double) this.direction.getStepX() * d3;
+			posZ -= (double) this.direction.getStepZ() * d3;
+			posY += offHeight;
 			Direction direction = this.direction.getCounterClockWise();
-			posX = posX + offWidth * (double) direction.getStepX();
-			posZ = posZ + offWidth * (double) direction.getStepZ();
+			posX += offWidth * (double) direction.getStepX();
+			posZ += offWidth * (double) direction.getStepZ();
 			this.setPosRaw(posX, posY, posZ);
 			double width = (double) this.getWidth();
 			double height = (double) this.getHeight();
 			double width2 = (double) this.getWidth();
 			if (this.direction.getAxis() == Direction.Axis.Z) {
-				width2 = 1.0D;
+				width2 = 1.0;
 			} else {
-				width = 1.0D;
+				width = 1.0;
 			}
 
-			width = width / 32.0D;
-			height = height / 32.0D;
-			width2 = width2 / 32.0D;
+			width /= 32.0;
+			height /= 32.0;
+			width2 /= 32.0;
 			this.setBoundingBox(new AABB(posX - width, posY - height, posZ - width2, posX + width, posY + height, posZ + width2));
 		}
 	}
@@ -372,7 +381,6 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 		double posX = this.getX();
 		double posY = this.getY();
 		double posZ = this.getZ();
-		super.refreshDimensions();
 		this.setPosRaw(posX, posY, posZ);
 	}
 }

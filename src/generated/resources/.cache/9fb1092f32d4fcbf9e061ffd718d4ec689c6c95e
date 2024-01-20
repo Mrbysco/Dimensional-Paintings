@@ -1,7 +1,7 @@
-// 1.20.2	2023-11-13T16:49:29.3018552	Recipes
-e0573b4e9133e6033f345f620fe198c7e16acadf data/dimpaintings/advancements/recipes/transportation/end_painting.json
-735b4fb447e4be63961c81fadac670b7d78bd276 data/dimpaintings/advancements/recipes/transportation/nether_painting.json
-12d0af26705c5be50ad220d7a5f24f072ba6d47a data/dimpaintings/advancements/recipes/transportation/overworld_painting.json
-32b8e692acb55ce0816da19ab4ff86061d6bcb28 data/dimpaintings/recipes/end_painting.json
-51bdcebddd5ad21db0996e4005da070237990385 data/dimpaintings/recipes/nether_painting.json
-0bf643a98293374f2fea3c23feadaa104dd0ff18 data/dimpaintings/recipes/overworld_painting.json
+// 1.20.4	2024-01-20T17:49:36.1077321	Recipes
+85a562100f6257f0ef0be5b11071f6910eedab69 data/dimpaintings/advancements/recipes/transportation/end_painting.json
+25fb54a76d00b1fe018118a519134efc70604e1d data/dimpaintings/advancements/recipes/transportation/nether_painting.json
+0be6c7edb22a4ccd06a7ff2374841d2661538958 data/dimpaintings/advancements/recipes/transportation/overworld_painting.json
+d6ff9f6f2ff8cf0650e1d1d685728196e5115c98 data/dimpaintings/recipes/end_painting.json
+4d9d902a85a3bab11aa6ee6c332bf1f79a5c83cb data/dimpaintings/recipes/nether_painting.json
+a6258884d4282790951cefaa63be400961aa5485 data/dimpaintings/recipes/overworld_painting.json

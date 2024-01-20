@@ -28,7 +28,7 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 		poseStack.pushPose();
 		poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - entityYaw));
 
-		DimensionPaintingType dimensionType = dimensionalPainting.dimensionType;
+		DimensionPaintingType dimensionType = dimensionalPainting.getDimensionType();
 		float f = 0.0625F;
 		poseStack.scale(f, f, f);
 		VertexConsumer consumer = bufferSource.getBuffer(RenderType.entitySolid(this.getTextureLocation(dimensionalPainting)));
