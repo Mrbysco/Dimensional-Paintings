@@ -2,6 +2,7 @@ package com.mrbysco.dimpaintings.registry;
 
 import com.mrbysco.dimpaintings.DimPaintings;
 import com.mrbysco.dimpaintings.entity.DimensionalPainting;
+import com.mrbysco.dimpaintings.item.CustomDimensionalPaintingItem;
 import com.mrbysco.dimpaintings.item.DimensionalPaintingItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -21,17 +22,13 @@ import java.util.List;
 
 public class PaintingRegistry {
 	public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, DimPaintings.MOD_ID);
-	public static final DeferredRegister<DimensionPaintingType> DIM_PAINTINGS = DeferredRegister.create(PaintingTypeRegistry.registryLocation, DimPaintings.MOD_ID);
 	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, DimPaintings.MOD_ID);
 	public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, DimPaintings.MOD_ID);
 
-	public static final RegistryObject<DimensionPaintingType> OVERWORLD = DIM_PAINTINGS.register("overworld", () -> new DimensionPaintingType(new ResourceLocation("overworld"), 64, 32));
-	public static final RegistryObject<DimensionPaintingType> NETHER = DIM_PAINTINGS.register("nether", () -> new DimensionPaintingType(new ResourceLocation("the_nether"), 64, 32));
-	public static final RegistryObject<DimensionPaintingType> END = DIM_PAINTINGS.register("end", () -> new DimensionPaintingType(new ResourceLocation("the_end"), 64, 32));
-
-	public static final RegistryObject<Item> OVERWORLD_PAINTING = ITEMS.register("overworld_painting", () -> new DimensionalPaintingItem(new Item.Properties(), OVERWORLD));
-	public static final RegistryObject<Item> NETHER_PAINTING = ITEMS.register("nether_painting", () -> new DimensionalPaintingItem(new Item.Properties(), NETHER));
-	public static final RegistryObject<Item> END_PAINTING = ITEMS.register("end_painting", () -> new DimensionalPaintingItem(new Item.Properties(), END));
+	public static final RegistryObject<Item> OVERWORLD_PAINTING = ITEMS.register("overworld_painting", () -> new DimensionalPaintingItem(new Item.Properties(), new ResourceLocation(DimPaintings.MOD_ID, "overworld")));
+	public static final RegistryObject<Item> NETHER_PAINTING = ITEMS.register("nether_painting", () -> new DimensionalPaintingItem(new Item.Properties(), new ResourceLocation(DimPaintings.MOD_ID, "nether")));
+	public static final RegistryObject<Item> END_PAINTING = ITEMS.register("end_painting", () -> new DimensionalPaintingItem(new Item.Properties(), new ResourceLocation(DimPaintings.MOD_ID, "end")));
+	public static final RegistryObject<Item> CUSTOM_PAINTING = ITEMS.register("custom_painting", () -> new CustomDimensionalPaintingItem(new Item.Properties()));
 
 	public static final RegistryObject<CreativeModeTab> MAIN_TAB = CREATIVE_MODE_TABS.register("tab", () -> CreativeModeTab.builder()
 			.withTabsBefore(CreativeModeTabs.SPAWN_EGGS)

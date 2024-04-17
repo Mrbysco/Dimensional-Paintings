@@ -33,7 +33,7 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 		poseStack.scale(f, f, f);
 		VertexConsumer consumer = bufferSource.getBuffer(RenderType.entitySolid(this.getTextureLocation(dimensionalPainting)));
 		DimensionalPaintingTextureManager paintingSpriteUploader = DimensionalPaintingTextureManager.instance();
-		this.renderDimensionalPainting(poseStack, consumer, dimensionalPainting, dimensionType.getWidth(), dimensionType.getHeight(), paintingSpriteUploader.get(dimensionType), paintingSpriteUploader.getBackSprite());
+		this.renderDimensionalPainting(poseStack, consumer, dimensionalPainting, dimensionType.width(), dimensionType.height(), paintingSpriteUploader.get(dimensionType), paintingSpriteUploader.getBackSprite());
 		poseStack.popPose();
 		super.render(dimensionalPainting, entityYaw, partialTicks, poseStack, bufferSource, p_225623_6_);
 	}

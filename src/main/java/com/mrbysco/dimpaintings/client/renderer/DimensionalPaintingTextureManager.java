@@ -4,6 +4,7 @@ import com.mrbysco.dimpaintings.DimPaintings;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
 import com.mrbysco.dimpaintings.registry.PaintingTypeRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.TextureAtlasHolder;
@@ -22,7 +23,13 @@ public class DimensionalPaintingTextureManager extends TextureAtlasHolder {
 	}
 
 	public TextureAtlasSprite get(DimensionPaintingType paintingType) {
-		return this.getSprite(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getKey(paintingType));
+		Minecraft minecraft = Minecraft.getInstance();
+		ClientLevel level = minecraft.level;
+		if (level == null) {
+			throw new NullPointerException("level must not be null.");
+		}
+		ResourceLocation key = PaintingTypeRegistry.getKey(level, paintingType);
+		return key == null ? this.getBackSprite() : this.getSprite(key);
 	}
 
 	public TextureAtlasSprite getBackSprite() {

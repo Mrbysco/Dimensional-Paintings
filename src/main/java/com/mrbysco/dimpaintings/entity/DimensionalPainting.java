@@ -71,7 +71,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	public DimensionalPainting(SpawnEntity spawnEntity, Level level) {
 		this(level, new BlockPos((int) spawnEntity.getPosX(), (int) spawnEntity.getPosY(), (int) spawnEntity.getPosZ()),
 				Direction.from2DDataValue(spawnEntity.getAdditionalData().readByte()),
-				PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getValue(ResourceLocation.tryParse(spawnEntity.getAdditionalData().readUtf())));
+				PaintingTypeRegistry.getValue(level, ResourceLocation.tryParse(spawnEntity.getAdditionalData().readUtf())));
 
 		FriendlyByteBuf additionalData = spawnEntity.getAdditionalData();
 		Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
@@ -153,7 +153,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 						boolean flag = entityIn.distanceTo(this) < 1 && !entityIn.onGround();
 						if (flag && !entityIn.isPassenger() && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canChangeDimensions()) {
 							entityIn.teleportTo((int) this.getX(), (int) this.getY(), (int) this.getZ());
-							TeleportHelper.teleportToGivenDimension(entityIn, this.dimensionType.getDimensionLocation());
+							TeleportHelper.teleportToGivenDimension(entityIn, this.dimensionType.dimensionLocation());
 							return;
 						}
 					}
@@ -174,7 +174,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 						player.getPersistentData().putInt("PaintingCooldown", DimensionalConfig.COMMON.teleportCooldown.get());
 					}
 					player.teleportTo((int) this.getX(), (int) this.getY(), (int) this.getZ());
-					TeleportHelper.teleportToGivenDimension(player, this.dimensionType.getDimensionLocation());
+					TeleportHelper.teleportToGivenDimension(player, this.dimensionType.dimensionLocation());
 				} else {
 					player.displayClientMessage(Component.translatable("dimpaintings.cooldown").withStyle(ChatFormatting.GOLD), true);
 				}
@@ -195,7 +195,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public void addAdditionalSaveData(CompoundTag compoundNBT) {
-		compoundNBT.putString("Dimension", PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getKey(this.dimensionType).toString());
+		compoundNBT.putString("Dimension", PaintingTypeRegistry.getKey(this.level(), this.dimensionType).toString());
 		compoundNBT.putByte("Facing", (byte) this.direction.get2DDataValue());
 		ItemStack itemstack = this.getItemRaw();
 		if (!itemstack.isEmpty()) {
@@ -205,7 +205,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public void readAdditionalSaveData(CompoundTag compoundNBT) {
-		this.dimensionType = PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getValue(ResourceLocation.tryParse(compoundNBT.getString("Dimension")));
+		this.dimensionType = PaintingTypeRegistry.getValue(this.level(), ResourceLocation.tryParse(compoundNBT.getString("Dimension")));
 		this.direction = Direction.from2DDataValue(compoundNBT.getByte("Facing"));
 		super.readAdditionalSaveData(compoundNBT);
 		this.setDirection(this.direction);
@@ -229,11 +229,11 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	}
 
 	public int getWidth() {
-		return this.dimensionType == null ? 1 : this.dimensionType.getWidth();
+		return this.dimensionType == null ? 1 : this.dimensionType.width();
 	}
 
 	public int getHeight() {
-		return this.dimensionType == null ? 1 : this.dimensionType.getHeight();
+		return this.dimensionType == null ? 1 : this.dimensionType.height();
 	}
 
 	public void dropItem(@Nullable Entity entity) {
@@ -271,7 +271,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityAdditio
 	@Override
 	public void writeSpawnData(FriendlyByteBuf buffer) {
 		buffer.writeByte((byte) this.direction.get2DDataValue());
-		buffer.writeUtf(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get().getKey(this.dimensionType).toString());
+		buffer.writeUtf(PaintingTypeRegistry.getKey(this.level(), this.dimensionType).toString());
 		buffer.writeUtf(ForgeRegistries.ITEMS.getKey(getItem().getItem()).toString());
 	}
 

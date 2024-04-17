@@ -26,7 +26,6 @@ public class DimPaintings {
 		eventBus.register(DimensionalConfig.class);
 
 		PaintingRegistry.ENTITY_TYPES.register(eventBus);
-		PaintingRegistry.DIM_PAINTINGS.register(eventBus);
 		PaintingRegistry.ITEMS.register(eventBus);
 		PaintingRegistry.CREATIVE_MODE_TABS.register(eventBus);
 

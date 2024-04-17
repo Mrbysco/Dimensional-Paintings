@@ -22,15 +22,17 @@ public class TeleportHelper {
 			ServerLevel destinationWorld = server != null ? server.getLevel(dimensionKey) : null;
 
 			if (destinationWorld == null) {
+				if (entityIn instanceof Player player) {
+					player.displayClientMessage(Component.literal(String.format("Destination of painting invalid %s isn't known", dimensionLocation)).withStyle(ChatFormatting.RED), true);
+				}
 				DimPaintings.LOGGER.error("Destination of painting invalid {} isn't known", dimensionLocation);
 				return;
 			}
 
 			PaintingTeleporter teleporter = new PaintingTeleporter(destinationWorld);
 
-			if (entityIn instanceof Player) {
-				ServerPlayer playerMP = (ServerPlayer) entityIn;
-				playerMP.changeDimension(destinationWorld, teleporter);
+			if (entityIn instanceof Player player) {
+				player.changeDimension(destinationWorld, teleporter);
 			} else {
 				entityIn.changeDimension(destinationWorld, teleporter);
 			}

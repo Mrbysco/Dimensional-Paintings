@@ -116,6 +116,7 @@ dependencies {
 
     implementation fg.deobf("curse.maven:jade-324717:4768593") //Jade (WAILA)
     implementation fg.deobf("curse.maven:TheOneProbe-245211:4629624") //The One probe (TOP)
+    implementation fg.deobf("curse.maven:the-twilight-forest-227639:4865711")
 }
 
 // Example for how to get properties into the manifest for reading at runtime.

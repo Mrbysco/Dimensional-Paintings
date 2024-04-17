@@ -1,13 +1,17 @@
 package com.mrbysco.dimpaintings.datagen;
 
 import com.mrbysco.dimpaintings.DimPaintings;
+import com.mrbysco.dimpaintings.datagen.provider.PaintingProvider;
+import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
@@ -19,6 +23,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -31,10 +36,25 @@ public class PaintingDatagen {
 
 		if (event.includeServer()) {
 			generator.addProvider(true, new PaintingRecipeProvider(packOutput));
+			generator.addProvider(true, new Paintings(packOutput, event.getLookupProvider()));
 		}
 		if (event.includeClient()) {
 			generator.addProvider(true, new PaintingLanguageProvider(packOutput));
 			generator.addProvider(true, new PaintingItemModelProvider(packOutput, helper));
+		}
+	}
+
+	private static class Paintings extends PaintingProvider {
+
+		public Paintings(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+			super(packOutput, lookupProvider, DimPaintings.MOD_ID);
+		}
+
+		@Override
+		protected void start() {
+			add("overworld", new DimensionPaintingType(new ResourceLocation("overworld"), 64, 32));
+			add("nether", new DimensionPaintingType(new ResourceLocation("the_nether"), 64, 32));
+			add("end", new DimensionPaintingType(new ResourceLocation("the_end"), 64, 32));
 		}
 	}
 
@@ -89,6 +109,7 @@ public class PaintingDatagen {
 			addItem(PaintingRegistry.OVERWORLD_PAINTING, "Overworld Painting");
 			addItem(PaintingRegistry.NETHER_PAINTING, "Nether Painting");
 			addItem(PaintingRegistry.END_PAINTING, "End Painting");
+			addItem(PaintingRegistry.CUSTOM_PAINTING, "Painting");
 
 			add("dimpaintings.same_dimension", "Can't teleport to the same dimension");
 			add("dimpaintings.cooldown", "Teleportation on cooldown");
