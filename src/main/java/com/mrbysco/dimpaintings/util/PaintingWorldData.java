@@ -5,6 +5,7 @@ import com.google.common.collect.ListMultimap;
 import com.mrbysco.dimpaintings.DimPaintings;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -34,7 +35,7 @@ public class PaintingWorldData extends SavedData {
 
 	private final ListMultimap<ResourceLocation, PaintingLocation> paintingPositionMap = ArrayListMultimap.create();
 
-	public static PaintingWorldData load(CompoundTag tag) {
+	public static PaintingWorldData load(CompoundTag tag, HolderLookup.Provider registries) {
 		ListMultimap<ResourceLocation, PaintingLocation> paintingMap = ArrayListMultimap.create();
 		for (String nbtName : tag.getAllKeys()) {
 			ListTag dimensionNBTList = new ListTag();
@@ -65,7 +66,7 @@ public class PaintingWorldData extends SavedData {
 	}
 
 	@Override
-	public CompoundTag save(CompoundTag compound) {
+	public CompoundTag save(CompoundTag compound, HolderLookup.Provider registries) {
 		for (ResourceLocation dimensionLocation : paintingPositionMap.keySet()) {
 			List<PaintingLocation> globalPosList = paintingPositionMap.get(dimensionLocation);
 

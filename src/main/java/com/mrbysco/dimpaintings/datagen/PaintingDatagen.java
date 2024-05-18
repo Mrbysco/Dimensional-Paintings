@@ -12,7 +12,7 @@ import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
@@ -22,7 +22,7 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class PaintingDatagen {
 	@SubscribeEvent
 	public static void gatherData(GatherDataEvent event) {
@@ -61,10 +61,10 @@ public class PaintingDatagen {
 					.pattern("OOO")
 					.pattern("OPO")
 					.pattern("OOO")
-					.define('O', Tags.Items.OBSIDIAN)
+					.define('O', Tags.Items.OBSIDIANS)
 					.define('P', Items.PAINTING)
 					.unlockedBy("has_painting", has(Items.PAINTING))
-					.unlockedBy("has_obsidian", has(Tags.Items.OBSIDIAN))
+					.unlockedBy("has_obsidian", has(Tags.Items.OBSIDIANS))
 					.save(consumer);
 
 			ShapedRecipeBuilder.shaped(RecipeCategory.TRANSPORTATION, PaintingRegistry.END_PAINTING.get())

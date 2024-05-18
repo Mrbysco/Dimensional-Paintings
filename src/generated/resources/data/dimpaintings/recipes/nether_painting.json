@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "O": {
-      "tag": "forge:obsidian"
+      "tag": "c:obsidians"
     },
     "P": {
       "item": "minecraft:painting"
@@ -15,6 +15,7 @@
     "OOO"
   ],
   "result": {
-    "item": "dimpaintings:nether_painting"
+    "count": 1,
+    "id": "dimpaintings:nether_painting"
   }
 }

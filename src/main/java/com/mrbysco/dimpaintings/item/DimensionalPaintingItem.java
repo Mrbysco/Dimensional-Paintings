@@ -4,21 +4,23 @@ import com.mrbysco.dimpaintings.entity.DimensionalPainting;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 import java.util.function.Supplier;
 
 public class DimensionalPaintingItem extends Item {
-	private final Supplier<DimensionPaintingType> paintingDimensionSupplier;
+	private final Holder<DimensionPaintingType> paintingDimensionSupplier;
 
-	public DimensionalPaintingItem(Item.Properties properties, Supplier<DimensionPaintingType> paintingDimension) {
+	public DimensionalPaintingItem(Item.Properties properties, Holder<DimensionPaintingType> paintingDimension) {
 		super(properties);
 		this.paintingDimensionSupplier = paintingDimension;
 	}
@@ -33,12 +35,12 @@ public class DimensionalPaintingItem extends Item {
 			return InteractionResult.FAIL;
 		} else {
 			Level level = useContext.getLevel();
-			DimensionalPainting dimensionalPainting = new DimensionalPainting(level, relativePos, direction, paintingDimensionSupplier.get());
+			DimensionalPainting dimensionalPainting = new DimensionalPainting(level, relativePos, direction, paintingDimensionSupplier);
 			dimensionalPainting.setItem(stack);
 
-			CompoundTag tag = stack.getTag();
-			if (tag != null) {
-				EntityType.updateCustomEntityTag(level, player, dimensionalPainting, tag);
+			CustomData customdata = stack.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
+			if (!customdata.isEmpty()) {
+				EntityType.updateCustomEntityTag(level, player, dimensionalPainting, customdata);
 			}
 
 			if (dimensionalPainting.survives()) {

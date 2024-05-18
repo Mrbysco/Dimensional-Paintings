@@ -12,9 +12,10 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -46,13 +47,13 @@ import java.util.List;
 
 public class DimensionalPainting extends HangingEntity implements IEntityWithComplexSpawn {
 	private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK = SynchedEntityData.defineId(DimensionalPainting.class, EntityDataSerializers.ITEM_STACK);
-	private static final EntityDataAccessor<DimensionPaintingType> DIMENSION_TYPE = SynchedEntityData.defineId(DimensionalPainting.class, PaintingSerializers.DIMENSION_TYPE.get());
+	private static final EntityDataAccessor<Holder<DimensionPaintingType>> DIMENSION_TYPE = SynchedEntityData.defineId(DimensionalPainting.class, PaintingSerializers.DIMENSION_TYPE.get());
 
 	public DimensionalPainting(EntityType<? extends DimensionalPainting> entityType, Level world) {
 		super(entityType, world);
 	}
 
-	public DimensionalPainting(Level level, BlockPos blockPos, Direction direction, DimensionPaintingType paintingType) {
+	public DimensionalPainting(Level level, BlockPos blockPos, Direction direction, Holder<DimensionPaintingType> paintingType) {
 		super(PaintingRegistry.DIMENSIONAL_PAINTING.get(), level, blockPos);
 		this.setDimensionType(paintingType);
 		this.setDirection(direction);
@@ -133,7 +134,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 						if (flag && !entityIn.isPassenger() && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canChangeDimensions()) {
 							if (this.getDimensionType() != null) {
 								entityIn.teleportTo((int) this.getX(), (int) this.getY(), (int) this.getZ());
-								TeleportHelper.teleportToGivenDimension(entityIn, this.getDimensionType().getDimensionLocation());
+								TeleportHelper.teleportToGivenDimension(entityIn, this.getDimensionType().value().getDimensionLocation());
 							}
 							return;
 						}
@@ -156,7 +157,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 							player.getPersistentData().putInt("PaintingCooldown", DimensionalConfig.COMMON.teleportCooldown.get());
 						}
 						player.teleportTo((int) this.getX(), (int) this.getY(), (int) this.getZ());
-						TeleportHelper.teleportToGivenDimension(player, this.getDimensionType().getDimensionLocation());
+						TeleportHelper.teleportToGivenDimension(player, this.getDimensionType().value().getDimensionLocation());
 					}
 				} else {
 					player.displayClientMessage(Component.translatable("dimpaintings.cooldown").withStyle(ChatFormatting.GOLD), true);
@@ -165,9 +166,10 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		}
 	}
 
-	protected void defineSynchedData() {
-		this.getEntityData().define(DATA_ITEM_STACK, ItemStack.EMPTY);
-		this.getEntityData().define(DIMENSION_TYPE, PaintingRegistry.OVERWORLD.get());
+	@Override
+	protected void defineSynchedData(SynchedEntityData.Builder builder) {
+		builder.define(DATA_ITEM_STACK, ItemStack.EMPTY);
+		builder.define(DIMENSION_TYPE, PaintingRegistry.OVERWORLD);
 	}
 
 	@Override
@@ -177,7 +179,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		}
 	}
 
-	public void setDimensionType(DimensionPaintingType type) {
+	public void setDimensionType(Holder<DimensionPaintingType> type) {
 		if (type == null) {
 			DimPaintings.LOGGER.error("Can not set Dimension type to null");
 		} else {
@@ -185,31 +187,51 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		}
 	}
 
-	public DimensionPaintingType getDimensionType() {
+	public Holder<DimensionPaintingType> getDimensionType() {
 		return this.entityData.get(DIMENSION_TYPE);
 	}
 
-	public void addAdditionalSaveData(CompoundTag compoundNBT) {
-		compoundNBT.putString("Dimension", PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(this.getDimensionType()).toString());
-		compoundNBT.putByte("Facing", (byte) this.direction.get2DDataValue());
+	@Override
+	public void addAdditionalSaveData(CompoundTag tag) {
+		var optionalResourceKey = this.getDimensionType().unwrapKey();
+		if (optionalResourceKey.isPresent()) {
+			tag.putString("Dimension", optionalResourceKey.get().toString());
+		} else {
+			tag.putString("Dimension", "");
+			DimPaintings.LOGGER.error("Could not save DimensionalPainting dimension type");
+			discard();
+		}
+		tag.putByte("Facing", (byte) this.direction.get2DDataValue());
 		ItemStack itemstack = this.getItemRaw();
 		if (!itemstack.isEmpty()) {
-			compoundNBT.put("Item", itemstack.save(new CompoundTag()));
+			tag.put("Item", this.getItem().save(this.registryAccess()));
 		}
-		super.addAdditionalSaveData(compoundNBT);
+		super.addAdditionalSaveData(tag);
 	}
 
-	public void readAdditionalSaveData(CompoundTag compoundNBT) {
-		this.setDimensionType(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get(ResourceLocation.tryParse(compoundNBT.getString("Dimension"))));
-		this.direction = Direction.from2DDataValue(compoundNBT.getByte("Facing"));
-		super.readAdditionalSaveData(compoundNBT);
+	@Override
+	public void readAdditionalSaveData(CompoundTag tag) {
+		if (tag.getString("Dimension").isEmpty()) {
+			discard();
+		} else {;
+			ResourceLocation dimensionLocation = ResourceLocation.tryParse(tag.getString("Dimension"));
+			this.setDimensionType(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getHolderOrThrow(PaintingTypeRegistry.createKey(dimensionLocation)));
+		}
+		this.direction = Direction.from2DDataValue(tag.getByte("Facing"));
+		super.readAdditionalSaveData(tag);
 		this.setDirection(this.direction);
-		ItemStack itemstack = ItemStack.of(compoundNBT.getCompound("Item"));
+		ItemStack itemstack;
+		if (tag.contains("Item", 10)) {
+			CompoundTag compoundtag = tag.getCompound("Item");
+			itemstack = ItemStack.parse(this.registryAccess(), tag.getCompound("Item")).orElse(ItemStack.EMPTY);
+		} else {
+			itemstack = ItemStack.EMPTY;
+		}
 		this.setItem(itemstack);
 	}
 
 	public void setItem(ItemStack stack) {
-		if (stack.getItem() != PaintingRegistry.OVERWORLD_PAINTING.get() || stack.hasTag()) {
+		if (stack.getItem() != PaintingRegistry.OVERWORLD_PAINTING.get()) {
 			this.getEntityData().set(DATA_ITEM_STACK, Util.make(stack.copy(), (itemStack) -> itemStack.setCount(1)));
 		}
 	}
@@ -224,11 +246,11 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	}
 
 	public int getWidth() {
-		return this.getDimensionType() == null ? 1 : this.getDimensionType().getWidth();
+		return this.getDimensionType() == null ? 1 : this.getDimensionType().value().getWidth();
 	}
 
 	public int getHeight() {
-		return this.getDimensionType() == null ? 1 : this.getDimensionType().getHeight();
+		return this.getDimensionType() == null ? 1 : this.getDimensionType().value().getHeight();
 	}
 
 	public void dropItem(@Nullable Entity entity) {
@@ -272,16 +294,17 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	}
 
 	@Override
-	public void writeSpawnData(FriendlyByteBuf buffer) {
+	public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
 		buffer.writeByte((byte) this.direction.get2DDataValue());
-		buffer.writeUtf(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(this.getDimensionType()).toString());
+		buffer.writeUtf(this.getDimensionType().unwrapKey().orElseThrow().location().toString());
 		buffer.writeUtf(BuiltInRegistries.ITEM.getKey(getItem().getItem()).toString());
 	}
 
 	@Override
-	public void readSpawnData(FriendlyByteBuf additionalData) {
+	public void readSpawnData(RegistryFriendlyByteBuf additionalData) {
 		this.setDirection(Direction.from2DDataValue(additionalData.readByte()));
-		this.setDimensionType(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.get(ResourceLocation.tryParse(additionalData.readUtf())));
+		var dimensionKey = PaintingTypeRegistry.createKey(ResourceLocation.tryParse(additionalData.readUtf()));
+		this.setDimensionType(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getHolderOrThrow(dimensionKey));
 		Item item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(additionalData.readUtf()));
 		if (item != null) {
 			this.setItem(new ItemStack(item));

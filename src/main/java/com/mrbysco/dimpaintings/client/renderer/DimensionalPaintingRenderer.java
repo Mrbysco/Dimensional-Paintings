@@ -16,8 +16,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 
 public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPainting> {
 	public DimensionalPaintingRenderer(Context rendererManager) {
@@ -28,7 +26,7 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 		poseStack.pushPose();
 		poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - entityYaw));
 
-		DimensionPaintingType dimensionType = dimensionalPainting.getDimensionType();
+		DimensionPaintingType dimensionType = dimensionalPainting.getDimensionType().value();
 		float f = 0.0625F;
 		poseStack.scale(f, f, f);
 		VertexConsumer consumer = bufferSource.getBuffer(RenderType.entitySolid(this.getTextureLocation(dimensionalPainting)));
@@ -43,9 +41,7 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 	}
 
 	private void renderDimensionalPainting(PoseStack poseStack, VertexConsumer consumer, DimensionalPainting dimensionalPainting, int width, int height, TextureAtlasSprite paintingSprite, TextureAtlasSprite backSprite) {
-		PoseStack.Pose last = poseStack.last();
-		Matrix4f pose = last.pose();
-		Matrix3f normal = last.normal();
+		PoseStack.Pose pose = poseStack.last();
 		float f = (float) (-width) / 2.0F;
 		float f1 = (float) (-height) / 2.0F;
 		float f2 = 0.5F;
@@ -97,35 +93,37 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 				float f20 = paintingSprite.getU((float) (d0 * (double) (i - (k + 1))));
 				float f21 = paintingSprite.getV((float) (d1 * (double) (j - l)));
 				float f22 = paintingSprite.getV((float) (d1 * (double) (j - (l + 1))));
-				this.vertex(pose, normal, consumer, f15, f18, f20, f21, -f2, 0, 0, -1, l1);
-				this.vertex(pose, normal, consumer, f16, f18, f19, f21, -f2, 0, 0, -1, l1);
-				this.vertex(pose, normal, consumer, f16, f17, f19, f22, -f2, 0, 0, -1, l1);
-				this.vertex(pose, normal, consumer, f15, f17, f20, f22, -f2, 0, 0, -1, l1);
-				this.vertex(pose, normal, consumer, f15, f17, f4, f5, f2, 0, 0, 1, l1);
-				this.vertex(pose, normal, consumer, f16, f17, f3, f5, f2, 0, 0, 1, l1);
-				this.vertex(pose, normal, consumer, f16, f18, f3, f6, f2, 0, 0, 1, l1);
-				this.vertex(pose, normal, consumer, f15, f18, f4, f6, f2, 0, 0, 1, l1);
-				this.vertex(pose, normal, consumer, f15, f17, f7, f9, -f2, 0, 1, 0, l1);
-				this.vertex(pose, normal, consumer, f16, f17, f8, f9, -f2, 0, 1, 0, l1);
-				this.vertex(pose, normal, consumer, f16, f17, f8, f10, f2, 0, 1, 0, l1);
-				this.vertex(pose, normal, consumer, f15, f17, f7, f10, f2, 0, 1, 0, l1);
-				this.vertex(pose, normal, consumer, f15, f18, f7, f9, f2, 0, -1, 0, l1);
-				this.vertex(pose, normal, consumer, f16, f18, f8, f9, f2, 0, -1, 0, l1);
-				this.vertex(pose, normal, consumer, f16, f18, f8, f10, -f2, 0, -1, 0, l1);
-				this.vertex(pose, normal, consumer, f15, f18, f7, f10, -f2, 0, -1, 0, l1);
-				this.vertex(pose, normal, consumer, f15, f17, f12, f13, f2, -1, 0, 0, l1);
-				this.vertex(pose, normal, consumer, f15, f18, f12, f14, f2, -1, 0, 0, l1);
-				this.vertex(pose, normal, consumer, f15, f18, f11, f14, -f2, -1, 0, 0, l1);
-				this.vertex(pose, normal, consumer, f15, f17, f11, f13, -f2, -1, 0, 0, l1);
-				this.vertex(pose, normal, consumer, f16, f17, f12, f13, -f2, 1, 0, 0, l1);
-				this.vertex(pose, normal, consumer, f16, f18, f12, f14, -f2, 1, 0, 0, l1);
-				this.vertex(pose, normal, consumer, f16, f18, f11, f14, f2, 1, 0, 0, l1);
-				this.vertex(pose, normal, consumer, f16, f17, f11, f13, f2, 1, 0, 0, l1);
+				this.vertex(pose, consumer, f15, f18, f20, f21, -f2, 0, 0, -1, l1);
+				this.vertex(pose, consumer, f16, f18, f19, f21, -f2, 0, 0, -1, l1);
+				this.vertex(pose, consumer, f16, f17, f19, f22, -f2, 0, 0, -1, l1);
+				this.vertex(pose, consumer, f15, f17, f20, f22, -f2, 0, 0, -1, l1);
+				this.vertex(pose, consumer, f15, f17, f4, f5, f2, 0, 0, 1, l1);
+				this.vertex(pose, consumer, f16, f17, f3, f5, f2, 0, 0, 1, l1);
+				this.vertex(pose, consumer, f16, f18, f3, f6, f2, 0, 0, 1, l1);
+				this.vertex(pose, consumer, f15, f18, f4, f6, f2, 0, 0, 1, l1);
+				this.vertex(pose, consumer, f15, f17, f7, f9, -f2, 0, 1, 0, l1);
+				this.vertex(pose, consumer, f16, f17, f8, f9, -f2, 0, 1, 0, l1);
+				this.vertex(pose, consumer, f16, f17, f8, f10, f2, 0, 1, 0, l1);
+				this.vertex(pose, consumer, f15, f17, f7, f10, f2, 0, 1, 0, l1);
+				this.vertex(pose, consumer, f15, f18, f7, f9, f2, 0, -1, 0, l1);
+				this.vertex(pose, consumer, f16, f18, f8, f9, f2, 0, -1, 0, l1);
+				this.vertex(pose, consumer, f16, f18, f8, f10, -f2, 0, -1, 0, l1);
+				this.vertex(pose, consumer, f15, f18, f7, f10, -f2, 0, -1, 0, l1);
+				this.vertex(pose, consumer, f15, f17, f12, f13, f2, -1, 0, 0, l1);
+				this.vertex(pose, consumer, f15, f18, f12, f14, f2, -1, 0, 0, l1);
+				this.vertex(pose, consumer, f15, f18, f11, f14, -f2, -1, 0, 0, l1);
+				this.vertex(pose, consumer, f15, f17, f11, f13, -f2, -1, 0, 0, l1);
+				this.vertex(pose, consumer, f16, f17, f12, f13, -f2, 1, 0, 0, l1);
+				this.vertex(pose, consumer, f16, f18, f12, f14, -f2, 1, 0, 0, l1);
+				this.vertex(pose, consumer, f16, f18, f11, f14, f2, 1, 0, 0, l1);
+				this.vertex(pose, consumer, f16, f17, f11, f13, f2, 1, 0, 0, l1);
 			}
 		}
 	}
 
-	private void vertex(Matrix4f pose, Matrix3f normal, VertexConsumer consumer, float p_229121_4_, float p_229121_5_, float x, float y, float p_229121_8_, int p_229121_9_, int p_229121_10_, int p_229121_11_, int p_229121_12_) {
-		consumer.vertex(pose, p_229121_4_, p_229121_5_, p_229121_8_).color(255, 255, 255, 255).uv(x, y).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(p_229121_12_).normal(normal, (float) p_229121_9_, (float) p_229121_10_, (float) p_229121_11_).endVertex();
+	private void vertex(PoseStack.Pose pose, VertexConsumer consumer, float x, float y,
+	                    float u, float v, float z, int normalX, int normalY, int normalZ, int packedLight) {
+		consumer.vertex(pose, x, y, z).color(255, 255, 255, 255).uv(u, v)
+				.overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight).normal(pose, (float) normalX, (float) normalY, (float) normalZ).endVertex();
 	}
 }
