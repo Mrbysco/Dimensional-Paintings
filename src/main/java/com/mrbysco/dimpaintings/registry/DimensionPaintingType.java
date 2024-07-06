@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class DimensionPaintingType {
 	public static final ResourceKey<Registry<DimensionPaintingType>> REGISTRY_KEY = ResourceKey.createRegistryKey(
-			new ResourceLocation(DimPaintings.MOD_ID, "dimension_painting"));
+			ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "dimension_painting"));
 	public static final MapCodec<DimensionPaintingType> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
 					ResourceLocation.CODEC.fieldOf("dimensionLocation").forGetter(DimensionPaintingType::getDimensionLocation),
 					Codec.INT.fieldOf("width").forGetter(DimensionPaintingType::getWidth),

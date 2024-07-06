@@ -123,7 +123,7 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 
 	private void vertex(PoseStack.Pose pose, VertexConsumer consumer, float x, float y,
 	                    float u, float v, float z, int normalX, int normalY, int normalZ, int packedLight) {
-		consumer.vertex(pose, x, y, z).color(255, 255, 255, 255).uv(u, v)
-				.overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight).normal(pose, (float) normalX, (float) normalY, (float) normalZ).endVertex();
+		consumer.addVertex(pose, x, y, z).setColor(255, 255, 255, 255).setUv(u, v)
+				.setOverlay(OverlayTexture.NO_OVERLAY).setLight(packedLight).setNormal(pose, (float) normalX, (float) normalY, (float) normalZ);
 	}
 }

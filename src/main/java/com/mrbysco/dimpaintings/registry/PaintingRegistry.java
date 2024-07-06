@@ -26,9 +26,9 @@ public class PaintingRegistry {
 	public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(DimPaintings.MOD_ID);
 	public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, DimPaintings.MOD_ID);
 
-	public static final DeferredHolder<DimensionPaintingType, DimensionPaintingType> OVERWORLD = DIM_PAINTINGS.register("overworld", () -> new DimensionPaintingType(new ResourceLocation("overworld"), 64, 32));
-	public static final DeferredHolder<DimensionPaintingType, DimensionPaintingType> NETHER = DIM_PAINTINGS.register("nether", () -> new DimensionPaintingType(new ResourceLocation("the_nether"), 64, 32));
-	public static final DeferredHolder<DimensionPaintingType, DimensionPaintingType> END = DIM_PAINTINGS.register("end", () -> new DimensionPaintingType(new ResourceLocation("the_end"), 64, 32));
+	public static final DeferredHolder<DimensionPaintingType, DimensionPaintingType> OVERWORLD = DIM_PAINTINGS.register("overworld", () -> new DimensionPaintingType(ResourceLocation.withDefaultNamespace("overworld"), 64, 32));
+	public static final DeferredHolder<DimensionPaintingType, DimensionPaintingType> NETHER = DIM_PAINTINGS.register("nether", () -> new DimensionPaintingType(ResourceLocation.withDefaultNamespace("the_nether"), 64, 32));
+	public static final DeferredHolder<DimensionPaintingType, DimensionPaintingType> END = DIM_PAINTINGS.register("end", () -> new DimensionPaintingType(ResourceLocation.withDefaultNamespace("the_end"), 64, 32));
 
 	public static final DeferredItem<DimensionalPaintingItem> OVERWORLD_PAINTING = ITEMS.register("overworld_painting", () -> new DimensionalPaintingItem(new Item.Properties(), OVERWORLD));
 	public static final DeferredItem<DimensionalPaintingItem> NETHER_PAINTING = ITEMS.register("nether_painting", () -> new DimensionalPaintingItem(new Item.Properties(), NETHER));

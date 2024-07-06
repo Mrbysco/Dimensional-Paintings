@@ -11,62 +11,49 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.portal.PortalInfo;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.util.ITeleporter;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 
-public class PaintingTeleporter implements ITeleporter {
-	@Nullable
-	@Override
-	public PortalInfo getPortalInfo(Entity entity, ServerLevel destLevel, Function<ServerLevel, PortalInfo> defaultPortalInfo) {
-		PortalInfo pos;
-
-		pos = placeInExistingPortal(destLevel, entity, dimensionPosition(entity, destLevel), entity instanceof Player);
-
-		return pos;
-	}
+public class PaintingTeleportHelper {
 
 	@Nullable
-	private static PortalInfo placeInExistingPortal(ServerLevel destLevel, Entity entity, BlockPos pos, boolean isPlayer) {
+	public static DimensionTransition getPaintingTeleportData(ServerLevel destination, Entity entity, BlockPos pos, boolean isPlayer) {
 		int i = 200;
 		BlockPos blockpos = pos;
-		boolean isToOverworld = destLevel.dimension() == Level.OVERWORLD;
+		boolean isToOverworld = destination.dimension() == Level.OVERWORLD;
 		boolean isFromEnd = entity.level().dimension() == Level.END && isToOverworld;
-		boolean isToEnd = destLevel.dimension() == Level.END;
+		boolean isToEnd = destination.dimension() == Level.END;
 
 		if (isFromEnd || (isToOverworld && DimensionalConfig.COMMON.overworldToBed.get())) {
-			blockpos = destLevel.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, destLevel.getSharedSpawnPos());
+			blockpos = destination.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, destination.getSharedSpawnPos());
 			float angle = entity.getXRot();
 
 			if (isPlayer && entity instanceof ServerPlayer serverPlayer) {
 				BlockPos respawnPos = serverPlayer.getRespawnPosition();
 				float respawnAngle = serverPlayer.getRespawnAngle();
-				Optional<Vec3> optional;
+				DimensionTransition optional;
 				if (serverPlayer != null && respawnPos != null) {
-					optional = Player.findRespawnPositionAndUseSpawnBlock(destLevel, respawnPos, respawnAngle, false, false);
+					optional = serverPlayer.findRespawnPositionAndUseSpawnBlock(true, DimensionTransition.DO_NOTHING);
 				} else {
-					optional = Optional.empty();
+					optional = null;
 				}
 
 				boolean flag2 = false;
-				if (optional.isPresent()) {
-					BlockState blockstate = destLevel.getBlockState(respawnPos);
+				if (optional != null) {
+					BlockState blockstate = destination.getBlockState(respawnPos);
 					boolean flag1 = blockstate.is(Blocks.RESPAWN_ANCHOR);
-					Vec3 vector3d = optional.get();
+					Vec3 vector3d = optional.pos();
 					float f1;
 					if (!blockstate.is(BlockTags.BEDS) && !flag1) {
 						f1 = respawnAngle;
@@ -83,18 +70,31 @@ public class PaintingTeleporter implements ITeleporter {
 				}
 
 				if (flag2) {
-					serverPlayer.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double) respawnPos.getX(), (double) respawnPos.getY(), (double) respawnPos.getZ(), 1.0F, 1.0F, destLevel.getSeed()));
+					serverPlayer.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double) respawnPos.getX(), (double) respawnPos.getY(), (double) respawnPos.getZ(), 1.0F, 1.0F, destination.getSeed()));
 				}
 			}
-			return new PortalInfo(new Vec3((double) blockpos.getX() + 0.5D, (double) blockpos.getY(), (double) blockpos.getZ() + 0.5D), entity.getDeltaMovement(), angle, entity.getXRot());
+			return new DimensionTransition(
+					destination,
+					new Vec3((double) blockpos.getX() + 0.5D, (double) blockpos.getY(), (double) blockpos.getZ() + 0.5D),
+					entity.getDeltaMovement(),
+					angle,
+					entity.getXRot(),
+					DimensionTransition.DO_NOTHING);
 		} else if (isToEnd) {
-			ServerLevel.makeObsidianPlatform(destLevel);
 			blockpos = ServerLevel.END_SPAWN_POINT;
 
-			return new PortalInfo(new Vec3((double) blockpos.getX() + 0.5D, (double) blockpos.getY(), (double) blockpos.getZ() + 0.5D), entity.getDeltaMovement(), entity.getYRot(), entity.getXRot());
+			return new DimensionTransition(
+					destination,
+					new Vec3((double) blockpos.getX() + 0.5D,
+							(double) blockpos.getY(),
+							(double) blockpos.getZ() + 0.5D),
+					entity.getDeltaMovement(),
+					entity.getYRot(),
+					entity.getXRot(),
+					DimensionTransition.PLAY_PORTAL_SOUND.then(DimensionTransition.PLACE_PORTAL_TICKET));
 		} else {
-			PaintingWorldData worldData = PaintingWorldData.get(destLevel);
-			List<PaintingLocation> paintingList = worldData.getDimensionPositions(destLevel.dimension().location());
+			PaintingWorldData worldData = PaintingWorldData.get(destination);
+			List<PaintingLocation> paintingList = worldData.getDimensionPositions(destination.dimension().location());
 			if (!paintingList.isEmpty()) {
 				List<ClosestPosition> closestList = new ArrayList<>();
 				for (PaintingLocation paintingPos : paintingList) {
@@ -108,8 +108,8 @@ public class PaintingTeleporter implements ITeleporter {
 				}
 				if (!closestList.isEmpty()) {
 					Collections.sort(closestList);
-					blockpos = closestList.get(0).pos();
-					return moveToSafeCoords(destLevel, entity, blockpos, false);
+					blockpos = closestList.getFirst().pos();
+					return moveToSafeCoords(destination, entity, blockpos, false);
 				}
 			}
 		}
@@ -117,7 +117,7 @@ public class PaintingTeleporter implements ITeleporter {
 		if (blockpos.equals(BlockPos.ZERO)) {
 			return null;
 		} else {
-			return moveToSafeCoords(destLevel, entity, blockpos, true);
+			return moveToSafeCoords(destination, entity, blockpos, true);
 		}
 	}
 
@@ -128,35 +128,35 @@ public class PaintingTeleporter implements ITeleporter {
 	}
 
 	//Safety stuff
-	private static PortalInfo moveToSafeCoords(ServerLevel serverLevel, Entity entity, BlockPos pos, boolean withGlass) {
-		if (serverLevel.isEmptyBlock(pos.below())) {
+	private static DimensionTransition moveToSafeCoords(ServerLevel destination, Entity entity, BlockPos pos, boolean withGlass) {
+		if (destination.isEmptyBlock(pos.below())) {
 			int distance;
 			for (distance = 1; distance < 32; ++distance) {
 				BlockPos checkPos = pos.below(distance);
-				BlockState belowState = serverLevel.getBlockState(checkPos);
-				if (belowState.entityCanStandOn(serverLevel, checkPos, entity)) {
+				BlockState belowState = destination.getBlockState(checkPos);
+				if (belowState.entityCanStandOn(destination, checkPos, entity)) {
 					break;
 				}
 			}
 
 			if (distance > 4) {
-				makePlatform(serverLevel, pos, withGlass);
+				makePlatform(destination, pos, withGlass);
 			}
 		} else {
 			BlockPos abovePos = pos.above(1);
-			BlockState aboveState = serverLevel.getBlockState(pos.above());
-			BlockState aboveState2 = serverLevel.getBlockState(abovePos);
+			BlockState aboveState = destination.getBlockState(pos.above());
+			BlockState aboveState2 = destination.getBlockState(abovePos);
 			if (aboveState.getBlock().isPossibleToRespawnInThis(aboveState) &&
 					aboveState2.getBlock().isPossibleToRespawnInThis(aboveState2)) {
-				return makePortalInfo(entity, abovePos.getX() + 0.5D, abovePos.getY(), abovePos.getZ() + 0.5D);
+				return makePortalInfo(destination, entity, abovePos.getX() + 0.5D, abovePos.getY(), abovePos.getZ() + 0.5D);
 			}
-			if (!serverLevel.isEmptyBlock(pos.below()) || !serverLevel.isEmptyBlock(pos)) {
-				makePlatform(serverLevel, abovePos, withGlass);
-				return makePortalInfo(entity, abovePos.getX(), abovePos.getY(), abovePos.getZ());
+			if (!destination.isEmptyBlock(pos.below()) || !destination.isEmptyBlock(pos)) {
+				makePlatform(destination, abovePos, withGlass);
+				return makePortalInfo(destination, entity, abovePos.getX(), abovePos.getY(), abovePos.getZ());
 			}
 		}
 
-		return makePortalInfo(entity, pos.getX(), pos.getY(), pos.getZ());
+		return makePortalInfo(destination, entity, pos.getX(), pos.getY(), pos.getZ());
 	}
 
 	private static void makePlatform(ServerLevel serverLevel, BlockPos pos, boolean withGlass) {
@@ -198,21 +198,12 @@ public class PaintingTeleporter implements ITeleporter {
 		}
 	}
 
-	private static PortalInfo makePortalInfo(Entity entity, double x, double y, double z) {
-		return makePortalInfo(entity, new Vec3(x, y, z));
+	private static DimensionTransition makePortalInfo(ServerLevel destination, Entity entity, double x, double y, double z) {
+		return makePortalInfo(destination, entity, new Vec3(x, y, z));
 	}
 
-	private static PortalInfo makePortalInfo(Entity entity, Vec3 pos) {
-		return new PortalInfo(pos, Vec3.ZERO, entity.getYRot(), entity.getXRot());
-	}
-
-	public PaintingTeleporter(ServerLevel serverLevel) {
-	}
-
-	@Override
-	public Entity placeEntity(Entity newEntity, ServerLevel currentLevel, ServerLevel destLevel, float yaw, Function<Boolean, Entity> repositionEntity) {
-		newEntity.fallDistance = 0;
-		return repositionEntity.apply(false); //Must be false or we fall on vanilla
+	private static DimensionTransition makePortalInfo(ServerLevel destination, Entity entity, Vec3 pos) {
+		return new DimensionTransition(destination, pos, Vec3.ZERO, entity.getYRot(), entity.getXRot(), DimensionTransition.DO_NOTHING);
 	}
 
 	record ClosestPosition(int distance, BlockPos pos) implements Comparable<ClosestPosition> {

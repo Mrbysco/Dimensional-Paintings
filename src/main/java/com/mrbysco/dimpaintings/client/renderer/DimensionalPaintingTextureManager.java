@@ -11,9 +11,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 
 public class DimensionalPaintingTextureManager extends TextureAtlasHolder {
-	public static final ResourceLocation LOCATION_DIMENSIONAL_TEXTURES = new ResourceLocation(DimPaintings.MOD_ID, "textures/atlas/dimensional_paintings.png");
-	public static final ResourceLocation INFO_LOCATION = new ResourceLocation(DimPaintings.MOD_ID, "dimensional_paintings");
-	private static final ResourceLocation BACK_SPRITE_LOCATION = new ResourceLocation(DimPaintings.MOD_ID, "back");
+	public static final ResourceLocation LOCATION_DIMENSIONAL_TEXTURES = ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "textures/atlas/dimensional_paintings.png");
+	public static final ResourceLocation INFO_LOCATION = ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "dimensional_paintings");
+	private static final ResourceLocation BACK_SPRITE_LOCATION = ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "back");
 
 	private static DimensionalPaintingTextureManager spriteUploader;
 

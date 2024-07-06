@@ -15,8 +15,6 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
-import java.util.function.Supplier;
-
 public class DimensionalPaintingItem extends Item {
 	private final Holder<DimensionPaintingType> paintingDimensionSupplier;
 
@@ -25,6 +23,7 @@ public class DimensionalPaintingItem extends Item {
 		this.paintingDimensionSupplier = paintingDimension;
 	}
 
+	@Override
 	public InteractionResult useOn(UseOnContext useContext) {
 		BlockPos pos = useContext.getClickedPos();
 		Direction direction = useContext.getClickedFace();
@@ -58,7 +57,7 @@ public class DimensionalPaintingItem extends Item {
 		}
 	}
 
-	protected boolean mayPlace(Player player, Direction direction, ItemStack stack, BlockPos pos) {
-		return !direction.getAxis().isVertical() && player.mayUseItemAt(pos, direction, stack);
+	protected boolean mayPlace(Player player, Direction direction, ItemStack hangingEntityStack, BlockPos pos) {
+		return !direction.getAxis().isVertical() && player.mayUseItemAt(pos, direction, hangingEntityStack);
 	}
 }
