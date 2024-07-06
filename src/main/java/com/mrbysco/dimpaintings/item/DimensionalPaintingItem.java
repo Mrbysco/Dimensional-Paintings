@@ -1,11 +1,11 @@
 package com.mrbysco.dimpaintings.item;
 
 import com.mrbysco.dimpaintings.entity.DimensionalPainting;
-import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
+import com.mrbysco.dimpaintings.registry.PaintingTypeRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -16,11 +16,11 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 public class DimensionalPaintingItem extends Item {
-	private final Holder<DimensionPaintingType> paintingDimensionSupplier;
+	private final ResourceLocation paintingDimension;
 
-	public DimensionalPaintingItem(Item.Properties properties, Holder<DimensionPaintingType> paintingDimension) {
+	public DimensionalPaintingItem(Item.Properties properties, ResourceLocation paintingDimension) {
 		super(properties);
-		this.paintingDimensionSupplier = paintingDimension;
+		this.paintingDimension = paintingDimension;
 	}
 
 	@Override
@@ -34,8 +34,7 @@ public class DimensionalPaintingItem extends Item {
 			return InteractionResult.FAIL;
 		} else {
 			Level level = useContext.getLevel();
-			DimensionalPainting dimensionalPainting = new DimensionalPainting(level, relativePos, direction, paintingDimensionSupplier);
-			dimensionalPainting.setItem(stack);
+			DimensionalPainting dimensionalPainting = new DimensionalPainting(level, relativePos, direction, PaintingTypeRegistry.getHolder(level.registryAccess(), paintingDimension));			dimensionalPainting.setItem(stack);
 
 			CustomData customdata = stack.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
 			if (!customdata.isEmpty()) {

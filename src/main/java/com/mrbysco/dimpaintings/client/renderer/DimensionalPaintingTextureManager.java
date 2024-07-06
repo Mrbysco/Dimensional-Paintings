@@ -2,7 +2,6 @@ package com.mrbysco.dimpaintings.client.renderer;
 
 import com.mrbysco.dimpaintings.DimPaintings;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
-import com.mrbysco.dimpaintings.registry.PaintingTypeRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -11,9 +10,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 
 public class DimensionalPaintingTextureManager extends TextureAtlasHolder {
-	public static final ResourceLocation LOCATION_DIMENSIONAL_TEXTURES = ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "textures/atlas/dimensional_paintings.png");
-	public static final ResourceLocation INFO_LOCATION = ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "dimensional_paintings");
-	private static final ResourceLocation BACK_SPRITE_LOCATION = ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "back");
+	public static final ResourceLocation LOCATION_DIMENSIONAL_TEXTURES =
+			ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "textures/atlas/dimensional_paintings.png");
+	public static final ResourceLocation INFO_LOCATION =
+			ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "dimensional_paintings");
+	private static final ResourceLocation BACK_SPRITE_LOCATION =
+			ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "back");
 
 	private static DimensionalPaintingTextureManager spriteUploader;
 
@@ -21,11 +23,8 @@ public class DimensionalPaintingTextureManager extends TextureAtlasHolder {
 		super(textureManager, LOCATION_DIMENSIONAL_TEXTURES, INFO_LOCATION);
 	}
 
-	public TextureAtlasSprite get(DimensionPaintingType paintingType) {
-		var key = PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getKey(paintingType);
-		if (key == null)
-			return getBackSprite();
-		return this.getSprite(key);
+	public TextureAtlasSprite get(DimensionPaintingType paintingVariant) {
+		return this.getSprite(paintingVariant.assetId());
 	}
 
 	public TextureAtlasSprite getBackSprite() {

@@ -1,6 +1,8 @@
 package com.mrbysco.dimpaintings.datagen;
 
 import com.mrbysco.dimpaintings.DimPaintings;
+import com.mrbysco.dimpaintings.datagen.provider.PaintingProvider;
+import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
@@ -9,6 +11,7 @@ import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -33,10 +36,30 @@ public class PaintingDatagen {
 
 		if (event.includeServer()) {
 			generator.addProvider(true, new PaintingRecipeProvider(packOutput, lookupProvider));
+			generator.addProvider(true, new Paintings(packOutput, lookupProvider));
 		}
 		if (event.includeClient()) {
 			generator.addProvider(true, new PaintingLanguageProvider(packOutput));
 			generator.addProvider(true, new PaintingItemModelProvider(packOutput, helper));
+		}
+	}
+
+	private static class Paintings extends PaintingProvider {
+
+		public Paintings(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+			super(packOutput, lookupProvider, DimPaintings.MOD_ID);
+		}
+
+		@Override
+		protected void start() {
+			addPainting("overworld", ResourceLocation.withDefaultNamespace("overworld"), 4, 2, "overworld");
+			addPainting("nether", ResourceLocation.withDefaultNamespace("the_nether"), 4, 2, "nether");
+			addPainting("end", ResourceLocation.withDefaultNamespace("the_end"), 4, 2, "end");
+		}
+
+		private void addPainting(String name, ResourceLocation dimension, int width, int height, String texture) {
+			add(name, new DimensionPaintingType(dimension, width, height,
+					ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, texture)));
 		}
 	}
 
@@ -91,6 +114,7 @@ public class PaintingDatagen {
 			addItem(PaintingRegistry.OVERWORLD_PAINTING, "Overworld Painting");
 			addItem(PaintingRegistry.NETHER_PAINTING, "Nether Painting");
 			addItem(PaintingRegistry.END_PAINTING, "End Painting");
+			addItem(PaintingRegistry.CUSTOM_PAINTING, "Custom Painting");
 
 			add("dimpaintings.same_dimension", "Can't teleport to the same dimension");
 			add("dimpaintings.cooldown", "Teleportation on cooldown");

@@ -1,5 +1,7 @@
 package com.mrbysco.dimpaintings.entity;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mrbysco.dimpaintings.DimPaintings;
 import com.mrbysco.dimpaintings.config.DimensionalConfig;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
@@ -16,6 +18,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -49,7 +52,11 @@ import java.util.List;
 
 public class DimensionalPainting extends HangingEntity implements IEntityWithComplexSpawn {
 	private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK = SynchedEntityData.defineId(DimensionalPainting.class, EntityDataSerializers.ITEM_STACK);
-	private static final EntityDataAccessor<Holder<DimensionPaintingType>> DIMENSION_TYPE = SynchedEntityData.defineId(DimensionalPainting.class, PaintingSerializers.DIMENSION_TYPE.get());
+	private static final EntityDataAccessor<Holder<DimensionPaintingType>> DIMENSION_TYPE = SynchedEntityData.defineId(
+			DimensionalPainting.class, PaintingSerializers.DIMENSION_TYPE.get()
+	);
+	public static final MapCodec<Holder<DimensionPaintingType>> VARIANT_MAP_CODEC = DimensionPaintingType.CODEC.fieldOf("dimension_type");
+	public static final Codec<Holder<DimensionPaintingType>> VARIANT_CODEC = VARIANT_MAP_CODEC.codec();
 
 	public DimensionalPainting(EntityType<? extends DimensionalPainting> entityType, Level world) {
 		super(entityType, world);
@@ -171,7 +178,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	@Override
 	protected void defineSynchedData(SynchedEntityData.Builder builder) {
 		builder.define(DATA_ITEM_STACK, ItemStack.EMPTY);
-		builder.define(DIMENSION_TYPE, PaintingRegistry.OVERWORLD);
+		builder.define(DIMENSION_TYPE, this.registryAccess().registryOrThrow(DimensionPaintingType.REGISTRY_KEY).getAny().orElseThrow());
 	}
 
 	@Override
@@ -182,9 +189,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	}
 
 	public void setDimensionType(Holder<DimensionPaintingType> type) {
-		if (type == null) {
-			DimPaintings.LOGGER.error("Can not set Dimension type to null");
-		} else {
+		if (type != null) {
 			this.entityData.set(DIMENSION_TYPE, type);
 		}
 	}
@@ -194,7 +199,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	}
 
 	public ResourceLocation getDimensionLocation() {
-		return this.getDimensionType().value().getDimensionLocation();
+		return this.getDimensionType().value().dimensionId();
 	}
 
 	public ServerLevel getDimensionLevel() {
@@ -213,14 +218,8 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 
 	@Override
 	public void addAdditionalSaveData(CompoundTag tag) {
-		var optionalResourceKey = this.getDimensionType().unwrapKey();
-		if (optionalResourceKey.isPresent()) {
-			tag.putString("Dimension", optionalResourceKey.get().toString());
-		} else {
-			tag.putString("Dimension", "");
-			DimPaintings.LOGGER.error("Could not save DimensionalPainting dimension type");
-			discard();
-		}
+		VARIANT_CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.getDimensionType())
+				.ifSuccess(p_330061_ -> tag.merge((CompoundTag) p_330061_));
 		tag.putByte("Facing", (byte) this.direction.get2DDataValue());
 		ItemStack itemstack = this.getItemRaw();
 		if (!itemstack.isEmpty()) {
@@ -231,21 +230,16 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 
 	@Override
 	public void readAdditionalSaveData(CompoundTag tag) {
-		if (tag.getString("Dimension").isEmpty()) {
-			discard();
-		} else {
-			ResourceLocation dimensionLocation = ResourceLocation.tryParse(tag.getString("Dimension"));
-			this.setDimensionType(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getHolderOrThrow(PaintingTypeRegistry.createKey(dimensionLocation)));
-		}
+		VARIANT_CODEC.parse(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), tag).ifSuccess(this::setDimensionType);
 		this.direction = Direction.from2DDataValue(tag.getByte("Facing"));
-		super.readAdditionalSaveData(tag);
-		this.setDirection(this.direction);
 		ItemStack itemstack;
 		if (tag.contains("Item", 10)) {
 			itemstack = ItemStack.parse(this.registryAccess(), tag.getCompound("Item")).orElse(ItemStack.EMPTY);
 		} else {
 			itemstack = ItemStack.EMPTY;
 		}
+		super.readAdditionalSaveData(tag);
+		this.setDirection(this.direction);
 		this.setItem(itemstack);
 	}
 
@@ -265,11 +259,11 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	}
 
 	public int getWidth() {
-		return this.getDimensionType() == null ? 1 : this.getDimensionType().value().getWidth();
+		return this.getDimensionType() == null ? 1 : this.getDimensionType().value().width();
 	}
 
 	public int getHeight() {
-		return this.getDimensionType() == null ? 1 : this.getDimensionType().value().getHeight();
+		return this.getDimensionType() == null ? 1 : this.getDimensionType().value().height();
 	}
 
 	public void dropItem(@Nullable Entity entity) {
@@ -322,8 +316,8 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	@Override
 	public void readSpawnData(RegistryFriendlyByteBuf additionalData) {
 		this.setDirection(Direction.from2DDataValue(additionalData.readByte()));
-		var dimensionKey = PaintingTypeRegistry.createKey(ResourceLocation.tryParse(additionalData.readUtf()));
-		this.setDimensionType(PaintingTypeRegistry.DIMENSIONAL_PAINTINGS.getHolderOrThrow(dimensionKey));
+		var dimensionValue = PaintingTypeRegistry.getHolder(this.registryAccess(), ResourceLocation.tryParse(additionalData.readUtf()));
+		this.setDimensionType(dimensionValue);
 		Item item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(additionalData.readUtf()));
 		if (item != null) {
 			this.setItem(new ItemStack(item));
@@ -331,50 +325,19 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	}
 
 	@Override
-	protected AABB calculateBoundingBox(BlockPos pos, Direction direction) {
-		double posX = (double) pos.getX() + 0.5;
-		double posY = (double) pos.getY() + 0.5;
-		double posZ = (double) pos.getZ() + 0.5;
-
-		if (this.level().isClientSide) {
-			if (tickCount == 0) {
-				if (direction == Direction.NORTH)
-					posY -= 1;
-				if (direction == Direction.EAST)
-					posY -= 1;
-				if (direction == Direction.SOUTH) {
-					posX -= 1;
-					posY -= 1;
-				}
-				if (direction == Direction.WEST) {
-					posY -= 1;
-					posZ -= 1;
-				}
-			}
-		}
-		double d3 = 0.46875;
-		double offWidth = this.offsetForPaintingSize(this.getWidth());
-		double offHeight = this.offsetForPaintingSize(this.getHeight());
-		posX -= (double) direction.getStepX() * d3;
-		posZ -= (double) direction.getStepZ() * d3;
-		posY += offHeight;
-		Direction clockDir = direction.getCounterClockWise();
-		posX += offWidth * (double) clockDir.getStepX();
-		posZ += offWidth * (double) clockDir.getStepZ();
-		this.setPosRaw(posX, posY, posZ);
-		double width = (double) this.getWidth();
-		double height = (double) this.getHeight();
-		double width2 = (double) this.getWidth();
-		if (this.direction.getAxis() == Direction.Axis.Z) {
-			width2 = 1.0;
-		} else {
-			width = 1.0;
-		}
-
-		width /= 32.0;
-		height /= 32.0;
-		width2 /= 32.0;
-		return new AABB(posX - width, posY - height, posZ - width2, posX + width, posY + height, posZ + width2);
+	protected AABB calculateBoundingBox(BlockPos pos, Direction p_direction) {
+		float f = 0.46875F;
+		Vec3 vec3 = Vec3.atCenterOf(pos).relative(p_direction, -0.46875);
+		DimensionPaintingType paintingType = this.getDimensionType().value();
+		double d0 = this.offsetForPaintingSize(paintingType.width());
+		double d1 = this.offsetForPaintingSize(paintingType.height());
+		Direction direction = p_direction.getCounterClockWise();
+		Vec3 vec31 = vec3.relative(direction, d0).relative(Direction.UP, d1);
+		Direction.Axis direction$axis = p_direction.getAxis();
+		double d2 = direction$axis == Direction.Axis.X ? 0.0625 : (double) paintingType.width();
+		double d3 = (double) paintingType.height();
+		double d4 = direction$axis == Direction.Axis.Z ? 0.0625 : (double) paintingType.width();
+		return AABB.ofSize(vec31, d2, d3, d4);
 	}
 
 	private double offsetForPaintingSize(int size) {

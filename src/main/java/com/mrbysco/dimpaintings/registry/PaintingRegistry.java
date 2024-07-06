@@ -2,6 +2,7 @@ package com.mrbysco.dimpaintings.registry;
 
 import com.mrbysco.dimpaintings.DimPaintings;
 import com.mrbysco.dimpaintings.entity.DimensionalPainting;
+import com.mrbysco.dimpaintings.item.CustomDimensionalPaintingItem;
 import com.mrbysco.dimpaintings.item.DimensionalPaintingItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -13,7 +14,6 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -22,17 +22,13 @@ import java.util.function.Supplier;
 
 public class PaintingRegistry {
 	public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, DimPaintings.MOD_ID);
-	public static final DeferredRegister<DimensionPaintingType> DIM_PAINTINGS = DeferredRegister.create(DimensionPaintingType.REGISTRY_KEY, DimPaintings.MOD_ID);
 	public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(DimPaintings.MOD_ID);
 	public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, DimPaintings.MOD_ID);
 
-	public static final DeferredHolder<DimensionPaintingType, DimensionPaintingType> OVERWORLD = DIM_PAINTINGS.register("overworld", () -> new DimensionPaintingType(ResourceLocation.withDefaultNamespace("overworld"), 64, 32));
-	public static final DeferredHolder<DimensionPaintingType, DimensionPaintingType> NETHER = DIM_PAINTINGS.register("nether", () -> new DimensionPaintingType(ResourceLocation.withDefaultNamespace("the_nether"), 64, 32));
-	public static final DeferredHolder<DimensionPaintingType, DimensionPaintingType> END = DIM_PAINTINGS.register("end", () -> new DimensionPaintingType(ResourceLocation.withDefaultNamespace("the_end"), 64, 32));
-
-	public static final DeferredItem<DimensionalPaintingItem> OVERWORLD_PAINTING = ITEMS.register("overworld_painting", () -> new DimensionalPaintingItem(new Item.Properties(), OVERWORLD));
-	public static final DeferredItem<DimensionalPaintingItem> NETHER_PAINTING = ITEMS.register("nether_painting", () -> new DimensionalPaintingItem(new Item.Properties(), NETHER));
-	public static final DeferredItem<DimensionalPaintingItem> END_PAINTING = ITEMS.register("end_painting", () -> new DimensionalPaintingItem(new Item.Properties(), END));
+	public static final DeferredItem<Item> OVERWORLD_PAINTING = ITEMS.register("overworld_painting", () -> new DimensionalPaintingItem(new Item.Properties(), ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "overworld")));
+	public static final DeferredItem<Item> NETHER_PAINTING = ITEMS.register("nether_painting", () -> new DimensionalPaintingItem(new Item.Properties(), ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "nether")));
+	public static final DeferredItem<Item> END_PAINTING = ITEMS.register("end_painting", () -> new DimensionalPaintingItem(new Item.Properties(), ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "end")));
+	public static final DeferredItem<Item> CUSTOM_PAINTING = ITEMS.register("custom_painting", () -> new CustomDimensionalPaintingItem(new Item.Properties()));
 
 	public static final Supplier<CreativeModeTab> MAIN_TAB = CREATIVE_MODE_TABS.register("tab", () -> CreativeModeTab.builder()
 			.withTabsBefore(CreativeModeTabs.SPAWN_EGGS)

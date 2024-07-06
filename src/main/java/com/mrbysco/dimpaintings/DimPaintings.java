@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.mrbysco.dimpaintings.client.ClientHandler;
 import com.mrbysco.dimpaintings.config.DimensionalConfig;
 import com.mrbysco.dimpaintings.handler.CooldownHandler;
+import com.mrbysco.dimpaintings.registry.PaintingDataComponents;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
 import com.mrbysco.dimpaintings.registry.PaintingSerializers;
 import net.neoforged.api.distmarker.Dist;
@@ -25,9 +26,9 @@ public class DimPaintings {
 
 		PaintingSerializers.ENTITY_DATA_SERIALIZER.register(eventBus);
 		PaintingRegistry.ENTITY_TYPES.register(eventBus);
-		PaintingRegistry.DIM_PAINTINGS.register(eventBus);
 		PaintingRegistry.ITEMS.register(eventBus);
 		PaintingRegistry.CREATIVE_MODE_TABS.register(eventBus);
+		PaintingDataComponents.DATA_COMPONENT_TYPES.register(eventBus);
 
 		NeoForge.EVENT_BUS.register(new CooldownHandler());
 
