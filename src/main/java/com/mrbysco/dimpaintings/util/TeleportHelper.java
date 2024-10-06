@@ -12,8 +12,7 @@ public class TeleportHelper {
 	public static void teleportToGivenDimension(Entity entityIn, ServerLevel destination) {
 		if (destination == null) return;
 		if (entityIn.level().dimension() != destination.dimension()) {
-			DimensionTransition transition = PaintingTeleportHelper.getPaintingTeleportData(
-					destination, entityIn, entityIn.blockPosition(), entityIn instanceof Player);
+			DimensionTransition transition = PaintingTeleportHelper.getPaintingTeleportData(destination, entityIn);
 			entityIn.changeDimension(transition);
 		} else {
 			if (entityIn instanceof Player) {
