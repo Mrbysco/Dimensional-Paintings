@@ -1,1 +1,1 @@
-* Fix platforms not being placed correctly
+* Overhaul teleport logic
