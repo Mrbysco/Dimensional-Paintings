@@ -1,1 +1,2 @@
-* Overhaul teleportation logic. The painting will now find a suitable nearby location to teleport to, rather than just teleporting to the nearest block
+* Fix netherMaxY config option being incorrectly implemented after the overhaul
+* fix overworldToBed config option not working after the overhaul
