@@ -47,7 +47,7 @@ public class PaintingTeleportHelper {
 		// Add bounds for checking the y-positions the entity can spawn
 		var minMaxBounds = Pair.of(destWorld.getMinBuildHeight(), destWorld.getMaxBuildHeight());
 		if (destWorld.dimension() == Level.NETHER) {
-			minMaxBounds = Pair.of(DimensionalConfig.COMMON.netherMaxY.get(), destWorld.getMaxBuildHeight());
+			minMaxBounds = Pair.of(destWorld.getMinBuildHeight(), DimensionalConfig.COMMON.netherMaxY.get());
 		}
 
 		// If spawn position exists, verify position is safe
@@ -124,6 +124,13 @@ public class PaintingTeleportHelper {
 		double dimensionScale = DimensionType.getTeleportationScale(entity.level().dimensionType(), destWorld.dimensionType());
 		BlockPos spawnPos = destWorld.getWorldBorder().clampToBounds(entity.blockPosition().getX() * dimensionScale, entity.blockPosition().getY(), entity.blockPosition().getZ() * dimensionScale)
 				.atY(Math.min(minMaxBounds.getSecond(), destWorld.getMinBuildHeight() + destWorld.getLogicalHeight()) - 1);
+
+		boolean isToOverworld = destWorld.dimension() == Level.OVERWORLD;
+		boolean isFromEnd = entity.level().dimension() == Level.END && isToOverworld;
+		if (isFromEnd && DimensionalConfig.COMMON.overworldToBed.get()) {
+			spawnPos = destWorld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, destWorld.getSharedSpawnPos());
+			return postProcessAndMake(destWorld, spawnPos, entity);
+		}
 
 		// No spawn position or isn't valid, so loop around location
 		for (var checkPos : BlockPos.spiralAround(spawnPos, 16, Direction.EAST, Direction.SOUTH)) {
