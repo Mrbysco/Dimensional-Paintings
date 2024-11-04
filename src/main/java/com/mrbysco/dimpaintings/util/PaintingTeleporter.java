@@ -133,7 +133,11 @@ public class PaintingTeleporter implements ITeleporter {
 	private static PortalInfo searchAroundAndDown(Entity entity, ServerLevel destLevel, Pair<Integer, Integer> minMaxBounds, Long2BooleanArrayMap cacheMap) {
 		// Set y position to max possible
 		double dimensionScale = DimensionType.getTeleportationScale(entity.level().dimensionType(), destLevel.dimensionType());
-		BlockPos spawnPos = destLevel.getWorldBorder().clampToBounds(entity.blockPosition().getX() * dimensionScale, entity.blockPosition().getY(), entity.blockPosition().getZ() * dimensionScale)
+		BlockPos spawnPos = destLevel.getWorldBorder().clampToBounds(
+				entity.blockPosition().getX() * dimensionScale,
+						entity.blockPosition().getY(),
+						entity.blockPosition().getZ() * dimensionScale
+				)
 				.atY(Math.min(minMaxBounds.getSecond(), destLevel.getMinBuildHeight() + destLevel.getLogicalHeight()) - 1);
 
 		boolean isToOverworld = destLevel.dimension() == Level.OVERWORLD;
