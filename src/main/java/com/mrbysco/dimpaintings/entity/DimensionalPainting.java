@@ -138,7 +138,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 			if (!nearbyEntities.isEmpty()) {
 				for (Iterator<Entity> iterator = nearbyEntities.iterator(); iterator.hasNext(); ) {
 					Entity entityIn = iterator.next();
-					if (entityIn != this && !(entityIn instanceof FakePlayer) && !(entityIn instanceof Player)) {
+					if (entityIn != this && !(entityIn instanceof Player)) {
 						boolean flag = entityIn.distanceTo(this) < 1 && !entityIn.onGround();
 						if (flag && !entityIn.isPassenger() && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canChangeDimensions(this.level(), getDimensionLevel())) {
 							if (this.getDimensionType() != null) {
