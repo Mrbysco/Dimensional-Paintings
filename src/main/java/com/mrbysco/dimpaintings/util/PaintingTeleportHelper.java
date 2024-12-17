@@ -26,6 +26,7 @@ import net.minecraft.world.level.levelgen.feature.EndPlatformFeature;
 import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PaintingTeleportHelper {
@@ -33,7 +34,7 @@ public class PaintingTeleportHelper {
 			map.put(ServerLevel.END, (entity, destWorld, minMaxBounds, cacheMap) -> toEnd(entity, destWorld))
 	);
 
-	@Nullable
+	@NotNull
 	public static DimensionTransition getPaintingTeleportData(ServerLevel destWorld, Entity entity) {
 		entity.fallDistance = 0;
 		if (entity instanceof LivingEntity livingEntity) { //Give resistance
