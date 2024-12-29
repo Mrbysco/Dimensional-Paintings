@@ -103,7 +103,7 @@ public class PaintingTeleporter implements ITeleporter {
 		int k = pos.getZ();
 		if (withGlass) {
 			BlockPos.betweenClosed(i - 2, j + 1, k - 2, i + 2, j + 4, k + 2).forEach((blockPos) -> {
-				if (!serverLevel.getFluidState(blockPos).isEmpty() || serverLevel.getBlockState(blockPos).getDestroySpeed(serverLevel, blockPos) >= 0) {
+				if (!serverLevel.getFluidState(blockPos).isEmpty() || serverLevel.isEmptyBlock(blockPos) || serverLevel.getBlockState(blockPos).getCollisionShape(serverLevel, blockPos).isEmpty()) {
 					serverLevel.setBlockAndUpdate(blockPos, Blocks.BLACK_STAINED_GLASS.defaultBlockState());
 				}
 			});
@@ -114,7 +114,7 @@ public class PaintingTeleporter implements ITeleporter {
 			});
 		}
 		BlockPos.betweenClosed(i - 1, j, k - 1, i + 1, j, k + 1).forEach((blockPos) -> {
-			if (serverLevel.getBlockState(blockPos).getDestroySpeed(serverLevel, blockPos) >= 0) {
+			if (serverLevel.isEmptyBlock(blockPos) || !serverLevel.getBlockState(blockPos).isFaceSturdy(serverLevel, blockPos, Direction.UP)) {
 				serverLevel.setBlockAndUpdate(blockPos, Blocks.OBSIDIAN.defaultBlockState());
 			}
 		});
