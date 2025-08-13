@@ -20,7 +20,7 @@ import java.util.Optional;
 
 public record DimensionPaintingType(ResourceLocation dimensionId, int width, int height, ResourceLocation assetId) {
 	public static final ResourceKey<Registry<DimensionPaintingType>> REGISTRY_KEY = ResourceKey.createRegistryKey(
-			ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "dimension_painting"));
+			DimPaintings.modLoc("dimension_painting"));
 	public static final Codec<DimensionPaintingType> DIRECT_CODEC = RecordCodecBuilder.create(
 			instance -> instance.group(
 							ResourceLocation.CODEC.fieldOf("dimension_id").forGetter(DimensionPaintingType::dimensionId),

@@ -6,7 +6,6 @@ import com.mrbysco.dimpaintings.item.CustomDimensionalPaintingItem;
 import com.mrbysco.dimpaintings.item.DimensionalPaintingItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -25,9 +24,9 @@ public class PaintingRegistry {
 	public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(DimPaintings.MOD_ID);
 	public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, DimPaintings.MOD_ID);
 
-	public static final DeferredItem<Item> OVERWORLD_PAINTING = ITEMS.register("overworld_painting", () -> new DimensionalPaintingItem(new Item.Properties(), ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "overworld")));
-	public static final DeferredItem<Item> NETHER_PAINTING = ITEMS.register("nether_painting", () -> new DimensionalPaintingItem(new Item.Properties(), ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "nether")));
-	public static final DeferredItem<Item> END_PAINTING = ITEMS.register("end_painting", () -> new DimensionalPaintingItem(new Item.Properties(), ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "end")));
+	public static final DeferredItem<Item> OVERWORLD_PAINTING = ITEMS.register("overworld_painting", () -> new DimensionalPaintingItem(new Item.Properties(), DimPaintings.modLoc("overworld")));
+	public static final DeferredItem<Item> NETHER_PAINTING = ITEMS.register("nether_painting", () -> new DimensionalPaintingItem(new Item.Properties(), DimPaintings.modLoc("nether")));
+	public static final DeferredItem<Item> END_PAINTING = ITEMS.register("end_painting", () -> new DimensionalPaintingItem(new Item.Properties(), DimPaintings.modLoc("end")));
 	public static final DeferredItem<Item> CUSTOM_PAINTING = ITEMS.register("custom_painting", () -> new CustomDimensionalPaintingItem(new Item.Properties()));
 
 	public static final Supplier<CreativeModeTab> MAIN_TAB = CREATIVE_MODE_TABS.register("tab", () -> CreativeModeTab.builder()

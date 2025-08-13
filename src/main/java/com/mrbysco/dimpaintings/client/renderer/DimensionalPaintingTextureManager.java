@@ -11,11 +11,11 @@ import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 
 public class DimensionalPaintingTextureManager extends TextureAtlasHolder {
 	public static final ResourceLocation LOCATION_DIMENSIONAL_TEXTURES =
-			ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "textures/atlas/dimensional_paintings.png");
+			DimPaintings.modLoc("textures/atlas/dimensional_paintings.png");
 	public static final ResourceLocation INFO_LOCATION =
-			ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "dimensional_paintings");
+			DimPaintings.modLoc("dimensional_paintings");
 	private static final ResourceLocation BACK_SPRITE_LOCATION =
-			ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "back");
+			DimPaintings.modLoc("back");
 
 	private static DimensionalPaintingTextureManager spriteUploader;
 

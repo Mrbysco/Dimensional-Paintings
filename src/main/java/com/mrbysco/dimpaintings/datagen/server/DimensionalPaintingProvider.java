@@ -24,6 +24,6 @@ public class DimensionalPaintingProvider extends PaintingProvider {
 
 	private void addPainting(String name, ResourceLocation dimension, int width, int height, String texture) {
 		add(name, new DimensionPaintingType(dimension, width, height,
-				ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, texture)));
+				DimPaintings.modLoc(texture)));
 	}
 }

@@ -7,6 +7,7 @@ import com.mrbysco.dimpaintings.handler.CooldownHandler;
 import com.mrbysco.dimpaintings.registry.PaintingDataComponents;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
 import com.mrbysco.dimpaintings.registry.PaintingSerializers;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -39,5 +40,9 @@ public class DimPaintings {
 			eventBus.addListener(ClientHandler::onRegisterReloadListeners);
 			eventBus.addListener(ClientHandler::registerEntityRenders);
 		}
+	}
+
+	public static ResourceLocation modLoc(String path) {
+		return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
 	}
 }

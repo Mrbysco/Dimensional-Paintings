@@ -32,7 +32,7 @@ public class CustomDimensionalPaintingItem extends Item {
 			return InteractionResult.FAIL;
 		} else {
 			Level level = useContext.getLevel();
-			ResourceLocation paintingDimension = ResourceLocation.fromNamespaceAndPath(DimPaintings.MOD_ID, "overworld");
+			ResourceLocation paintingDimension = DimPaintings.modLoc("overworld");
 			if (stack.has(PaintingDataComponents.DIMENSION_TYPE)) {
 				paintingDimension = stack.get(PaintingDataComponents.DIMENSION_TYPE);
 			}
