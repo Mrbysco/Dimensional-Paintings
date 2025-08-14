@@ -1,12 +1,12 @@
 package com.mrbysco.dimpaintings.datagen.server;
 
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.Tags;
@@ -14,13 +14,13 @@ import net.neoforged.neoforge.common.Tags;
 import java.util.concurrent.CompletableFuture;
 
 public class DimensionalRecipeProvider extends RecipeProvider {
-	public DimensionalRecipeProvider(PackOutput packOutput, CompletableFuture<Provider> lookupProvider) {
-		super(packOutput, lookupProvider);
+	public DimensionalRecipeProvider(HolderLookup.Provider provider, RecipeOutput recipeOutput) {
+		super(provider, recipeOutput);
 	}
 
 	@Override
-	protected void buildRecipes(RecipeOutput consumer) {
-		ShapedRecipeBuilder.shaped(RecipeCategory.TRANSPORTATION, PaintingRegistry.OVERWORLD_PAINTING.get())
+	protected void buildRecipes() {
+		shaped(RecipeCategory.TRANSPORTATION, PaintingRegistry.OVERWORLD_PAINTING.get())
 				.pattern("DDD")
 				.pattern("DPD")
 				.pattern("DDD")
@@ -28,9 +28,9 @@ public class DimensionalRecipeProvider extends RecipeProvider {
 				.define('P', Items.PAINTING)
 				.unlockedBy("has_painting", has(Items.PAINTING))
 				.unlockedBy("has_logs", has(ItemTags.LOGS))
-				.save(consumer);
+				.save(output);
 
-		ShapedRecipeBuilder.shaped(RecipeCategory.TRANSPORTATION, PaintingRegistry.NETHER_PAINTING.get())
+		shaped(RecipeCategory.TRANSPORTATION, PaintingRegistry.NETHER_PAINTING.get())
 				.pattern("OOO")
 				.pattern("OPO")
 				.pattern("OOO")
@@ -38,9 +38,9 @@ public class DimensionalRecipeProvider extends RecipeProvider {
 				.define('P', Items.PAINTING)
 				.unlockedBy("has_painting", has(Items.PAINTING))
 				.unlockedBy("has_obsidian", has(Tags.Items.OBSIDIANS))
-				.save(consumer);
+				.save(output);
 
-		ShapedRecipeBuilder.shaped(RecipeCategory.TRANSPORTATION, PaintingRegistry.END_PAINTING.get())
+		shaped(RecipeCategory.TRANSPORTATION, PaintingRegistry.END_PAINTING.get())
 				.pattern("EEE")
 				.pattern("EPE")
 				.pattern("EEE")
@@ -48,7 +48,23 @@ public class DimensionalRecipeProvider extends RecipeProvider {
 				.define('P', Items.PAINTING)
 				.unlockedBy("has_painting", has(Items.PAINTING))
 				.unlockedBy("has_ender_eye", has(Items.ENDER_EYE))
-				.save(consumer);
+				.save(output);
 
+	}
+
+	public static class Runner extends RecipeProvider.Runner {
+		public Runner(PackOutput output, CompletableFuture<Provider> completableFuture) {
+			super(output, completableFuture);
+		}
+
+		@Override
+		protected RecipeProvider createRecipeProvider(HolderLookup.Provider provider, RecipeOutput recipeOutput) {
+			return new DimensionalRecipeProvider(provider, recipeOutput);
+		}
+
+		@Override
+		public String getName() {
+			return "Dimensional Painting Recipes";
+		}
 	}
 }

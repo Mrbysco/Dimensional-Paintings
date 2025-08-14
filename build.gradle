@@ -45,7 +45,7 @@ runs {
         programArgument '--nogui'
     }
 
-    data {
+    clientData {
         // example of overriding the workingDirectory set in configureEach above, uncomment if you want to use it
         // workingDirectory project.file('run-data')
 
@@ -77,8 +77,8 @@ dependencies {
 
     runtimeOnly "mezz.jei:jei-${mc_version}-neoforge:${jei_version}"
 
-    runtimeOnly "curse.maven:jade-324717:6853386" //Jade (WAILA)
-    runtimeOnly "curse.maven:TheOneProbe-245211:6106998" //The One probe (TOP)
+    runtimeOnly "curse.maven:jade-324717:${jade_id}" //Jade (WAILA)
+//    runtimeOnly "curse.maven:TheOneProbe-245211:${top_id}" //The One probe (TOP)
 }
 
 // Example for how to get properties into the manifest for reading at runtime.

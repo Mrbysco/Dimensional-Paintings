@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "D": {
-      "tag": "minecraft:logs"
-    },
-    "P": {
-      "item": "minecraft:painting"
-    }
+    "D": "#minecraft:logs",
+    "P": "minecraft:painting"
   },
   "pattern": [
     "DDD",

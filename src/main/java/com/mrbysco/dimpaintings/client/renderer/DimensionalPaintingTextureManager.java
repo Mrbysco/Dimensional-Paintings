@@ -7,7 +7,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.TextureAtlasHolder;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 
 public class DimensionalPaintingTextureManager extends TextureAtlasHolder {
 	public static final ResourceLocation LOCATION_DIMENSIONAL_TEXTURES =
@@ -31,9 +31,9 @@ public class DimensionalPaintingTextureManager extends TextureAtlasHolder {
 		return this.getSprite(BACK_SPRITE_LOCATION);
 	}
 
-	public static void initialize(RegisterClientReloadListenersEvent event) {
+	public static void initialize(AddClientReloadListenersEvent event) {
 		spriteUploader = new DimensionalPaintingTextureManager(Minecraft.getInstance().getTextureManager());
-		event.registerReloadListener(spriteUploader);
+		event.addListener(DimPaintings.modLoc("sprite_uploader"), spriteUploader);
 	}
 
 	public static DimensionalPaintingTextureManager instance() {

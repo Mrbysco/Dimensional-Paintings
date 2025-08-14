@@ -6,7 +6,6 @@ import com.mrbysco.dimpaintings.item.CustomDimensionalPaintingItem;
 import com.mrbysco.dimpaintings.item.DimensionalPaintingItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.CreativeModeTab;
@@ -20,14 +19,14 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class PaintingRegistry {
-	public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, DimPaintings.MOD_ID);
+	public static final DeferredRegister.Entities ENTITY_TYPES = DeferredRegister.createEntities(DimPaintings.MOD_ID);
 	public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(DimPaintings.MOD_ID);
 	public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, DimPaintings.MOD_ID);
 
-	public static final DeferredItem<Item> OVERWORLD_PAINTING = ITEMS.register("overworld_painting", () -> new DimensionalPaintingItem(new Item.Properties(), DimPaintings.modLoc("overworld")));
-	public static final DeferredItem<Item> NETHER_PAINTING = ITEMS.register("nether_painting", () -> new DimensionalPaintingItem(new Item.Properties(), DimPaintings.modLoc("nether")));
-	public static final DeferredItem<Item> END_PAINTING = ITEMS.register("end_painting", () -> new DimensionalPaintingItem(new Item.Properties(), DimPaintings.modLoc("end")));
-	public static final DeferredItem<Item> CUSTOM_PAINTING = ITEMS.register("custom_painting", () -> new CustomDimensionalPaintingItem(new Item.Properties()));
+	public static final DeferredItem<Item> OVERWORLD_PAINTING = ITEMS.registerItem("overworld_painting", (properties) -> new DimensionalPaintingItem(properties, DimPaintings.modLoc("overworld")));
+	public static final DeferredItem<Item> NETHER_PAINTING = ITEMS.registerItem("nether_painting", (properties) -> new DimensionalPaintingItem(properties, DimPaintings.modLoc("nether")));
+	public static final DeferredItem<Item> END_PAINTING = ITEMS.registerItem("end_painting", (properties) -> new DimensionalPaintingItem(properties, DimPaintings.modLoc("end")));
+	public static final DeferredItem<Item> CUSTOM_PAINTING = ITEMS.registerItem("custom_painting", CustomDimensionalPaintingItem::new);
 
 	public static final Supplier<CreativeModeTab> MAIN_TAB = CREATIVE_MODE_TABS.register("tab", () -> CreativeModeTab.builder()
 			.withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
@@ -38,12 +37,12 @@ public class PaintingRegistry {
 				output.acceptAll(stacks);
 			}).build());
 
-	public static final Supplier<EntityType<DimensionalPainting>> DIMENSIONAL_PAINTING = ENTITY_TYPES.register("dimensional_painting", () ->
-			register("dimensional_painting", EntityType.Builder.<DimensionalPainting>of(DimensionalPainting::new, MobCategory.MISC)
+	public static final Supplier<EntityType<DimensionalPainting>> DIMENSIONAL_PAINTING = ENTITY_TYPES.registerEntityType("dimensional_painting",
+			DimensionalPainting::new,
+			MobCategory.MISC,
+			builder -> builder
 					.sized(0.5F, 0.5F)
-					.clientTrackingRange(10).updateInterval(Integer.MAX_VALUE)));
-
-	public static <T extends Entity> EntityType<T> register(String id, EntityType.Builder<T> builder) {
-		return builder.build(id);
-	}
+					.clientTrackingRange(10)
+					.updateInterval(Integer.MAX_VALUE)
+	);
 }

@@ -18,6 +18,6 @@ public class PaintingTypeRegistry {
 	}
 
 	public static Holder<DimensionPaintingType> getHolder(RegistryAccess registryAccess, ResourceLocation location) {
-		return registryAccess.registryOrThrow(DimensionPaintingType.REGISTRY_KEY).getHolder(location).orElse(null);
+		return registryAccess.lookupOrThrow(DimensionPaintingType.REGISTRY_KEY).get(location).orElse(null);
 	}
 }

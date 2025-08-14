@@ -41,7 +41,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DiodeBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 import org.jetbrains.annotations.Nullable;
@@ -84,15 +83,15 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	}
 
 	@Override
-	public boolean hurt(DamageSource damageSource, float amount) {
-		if (this.isInvulnerableTo(damageSource)) {
+	public boolean hurtServer(ServerLevel serverLevel, DamageSource damageSource, float amount) {
+		if (this.isInvulnerableToBase(damageSource)) {
 			return false;
 		} else {
-			if (isAlive() && !this.level().isClientSide) {
+			if (isAlive()) {
 				this.removeStoredPosition();
-				this.kill();
+				this.discard();
 				this.markHurt();
-				this.dropItem(damageSource.getEntity());
+				this.dropItem(serverLevel, damageSource.getEntity());
 			}
 
 			return true;
@@ -100,19 +99,19 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	}
 
 	public void move(MoverType type, Vec3 position) {
-		if (!this.level().isClientSide && isAlive() && position.lengthSqr() > 0.0D) {
+		if (this.level() instanceof ServerLevel serverLevel && isAlive() && position.lengthSqr() > 0.0D) {
 			this.removeStoredPosition();
-			this.kill();
-			this.dropItem((Entity) null);
+			this.discard();
+			this.dropItem(serverLevel, (Entity) null);
 		}
 
 	}
 
 	public void push(double posX, double posY, double posZ) {
-		if (!this.level().isClientSide && isAlive() && posX * posX + posY * posY + posZ * posZ > 0.0D) {
+		if (this.level() instanceof ServerLevel serverLevel && isAlive() && posX * posX + posY * posY + posZ * posZ > 0.0D) {
 			this.removeStoredPosition();
-			this.kill();
-			this.dropItem((Entity) null);
+			this.discard();
+			this.dropItem(serverLevel, (Entity) null);
 		}
 
 	}
@@ -124,7 +123,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	}
 
 	@Override
-	public boolean canChangeDimensions(Level oldLevel, Level newLevel) {
+	public boolean canTeleport(Level oldLevel, Level newLevel) {
 		return false;
 	}
 
@@ -139,7 +138,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 					Entity entityIn = iterator.next();
 					if (entityIn != this && !(entityIn instanceof Player)) {
 						boolean flag = entityIn.distanceTo(this) < 1 && !entityIn.onGround();
-						if (flag && !entityIn.isPassenger() && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canChangeDimensions(this.level(), getDimensionLevel())) {
+						if (flag && !entityIn.isPassenger() && !entityIn.isVehicle() && entityIn.canTeleport(this.level(), getDimensionLevel())) {
 							if (this.getDimensionType() != null) {
 								entityIn.teleportTo((int) this.getX(), (int) this.getY(), (int) this.getZ());
 								TeleportHelper.teleportToGivenDimension(entityIn, this.getDimensionLevel());
@@ -157,7 +156,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		super.playerTouch(player);
 		if (!this.level().isClientSide && isAlive()) {
 			boolean flag = player.distanceTo(this) < 1 && !player.onGround();
-			if (flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canChangeDimensions(this.level(), getDimensionLevel())) {
+			if (flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canTeleport(this.level(), getDimensionLevel())) {
 				boolean cooldownFlag = DimensionalConfig.COMMON.teleportCooldown.get() == 0;
 				if (cooldownFlag || !player.getPersistentData().contains("PaintingCooldown")) {
 					if (this.getDimensionType() != null) {
@@ -177,7 +176,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	@Override
 	protected void defineSynchedData(SynchedEntityData.Builder builder) {
 		builder.define(DATA_ITEM_STACK, ItemStack.EMPTY);
-		builder.define(DIMENSION_TYPE, this.registryAccess().registryOrThrow(DimensionPaintingType.REGISTRY_KEY).getAny().orElseThrow());
+		builder.define(DIMENSION_TYPE, this.registryAccess().lookupOrThrow(DimensionPaintingType.REGISTRY_KEY).getAny().orElseThrow());
 	}
 
 	@Override
@@ -265,8 +264,9 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		return this.getDimensionType() == null ? 1 : this.getDimensionType().value().height();
 	}
 
-	public void dropItem(@Nullable Entity entity) {
-		if (this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+	@Override
+	public void dropItem(ServerLevel level, @Nullable Entity entity) {
+		if (level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
 			this.playSound(SoundEvents.PAINTING_BREAK, 1.0F, 1.0F);
 			if (entity instanceof Player player) {
 				if (player.getAbilities().instabuild) {
@@ -274,12 +274,12 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 				}
 			}
 
-			this.spawnAtLocation(getItem());
+			this.spawnAtLocation(level, getItem());
 		}
 	}
 
 	@Override
-	public ItemStack getPickedResult(HitResult target) {
+	public ItemStack getPickResult() {
 		return getItem();
 	}
 
@@ -317,7 +317,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		this.setDirection(Direction.from2DDataValue(additionalData.readByte()));
 		var dimensionValue = PaintingTypeRegistry.getHolder(this.registryAccess(), ResourceLocation.tryParse(additionalData.readUtf()));
 		this.setDimensionType(dimensionValue);
-		Item item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(additionalData.readUtf()));
+		Item item = BuiltInRegistries.ITEM.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
 		if (item != null) {
 			this.setItem(new ItemStack(item));
 		}

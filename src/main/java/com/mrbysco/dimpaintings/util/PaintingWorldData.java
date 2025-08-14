@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -53,10 +54,13 @@ public class PaintingWorldData extends SavedData {
 				List<PaintingLocation> posList = new ArrayList<>();
 				for (int i = 0; i < dimensionNBTList.size(); ++i) {
 					CompoundTag dimTag = dimensionNBTList.getCompound(i);
-					if (dimTag.contains("BlockPos") && dimTag.contains("Direction")) {
-						BlockPos blockPos = BlockPos.of(dimTag.getLong("BlockPos"));
-						int direction2D = dimTag.getInt("Direction");
-						posList.add(new PaintingLocation(blockPos, direction2D));
+
+					if (dimTag.contains("PaintingLocation", 10)) {
+						PaintingLocation.CODEC
+								.parse(registries.createSerializationContext(NbtOps.INSTANCE),
+										dimTag.get("PaintingLocation"))
+								.resultOrPartial(warn -> DimPaintings.LOGGER.warn("Failed to parse dimension location: '{}'", warn))
+								.ifPresent(posList::add);
 					}
 				}
 				paintingMap.putAll(ResourceLocation.tryParse(nbtName), posList);
@@ -73,8 +77,9 @@ public class PaintingWorldData extends SavedData {
 			ListTag dimensionStorage = new ListTag();
 			for (PaintingLocation paintLoc : globalPosList) {
 				CompoundTag positionTag = new CompoundTag();
-				positionTag.putLong("BlockPos", paintLoc.pos.asLong());
-				positionTag.putInt("Direction", paintLoc.direction2D);
+				positionTag.put(
+						"PaintingLocation", PaintingLocation.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), paintLoc).getOrThrow()
+				);
 				dimensionStorage.add(positionTag);
 			}
 			compound.put(dimensionLocation.toString(), dimensionStorage);
@@ -89,7 +94,8 @@ public class PaintingWorldData extends SavedData {
 	public void addPositionToDimension(ResourceLocation dimensionLocation, BlockPos pos, Direction direction) {
 		BlockPos roundedPos = new BlockPos((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
 		PaintingLocation position = new PaintingLocation(roundedPos, direction);
-		List<PaintingLocation> similarPos = paintingPositionMap.get(dimensionLocation).stream().filter((loc) -> loc.distanceTo(roundedPos) < 2).collect(Collectors.toList());
+		List<PaintingLocation> similarPos = paintingPositionMap.get(dimensionLocation).stream()
+				.filter((loc) -> loc.distanceTo(roundedPos) < 2).collect(Collectors.toList());
 		if (similarPos.isEmpty()) {
 			paintingPositionMap.get(dimensionLocation)
 					.add(position);

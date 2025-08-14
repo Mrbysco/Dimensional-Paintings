@@ -1,5 +1,5 @@
 {
-  "parent": "dimpaintings:item/base_painting",
+  "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "dimpaintings:item/overworld_painting"
   }

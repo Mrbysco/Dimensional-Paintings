@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "O": {
-      "tag": "c:obsidians"
-    },
-    "P": {
-      "item": "minecraft:painting"
-    }
+    "O": "#c:obsidians",
+    "P": "minecraft:painting"
   },
   "pattern": [
     "OOO",
