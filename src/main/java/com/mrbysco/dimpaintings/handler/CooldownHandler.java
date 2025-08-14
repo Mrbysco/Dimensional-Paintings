@@ -16,7 +16,7 @@ public class CooldownHandler {
 		if (!level.isClientSide && level.getGameTime() % 20 == 0 && DimensionalConfig.COMMON.teleportCooldown.get() > 0) {
 			CompoundTag persistentData = player.getPersistentData();
 			if (persistentData.contains("PaintingCooldown")) {
-				int currentCooldown = persistentData.getInt("PaintingCooldown") - 1;
+				int currentCooldown = persistentData.getIntOr("PaintingCooldown", 0) - 1;
 				if (currentCooldown == 0) {
 					persistentData.remove("PaintingCooldown");
 				} else {

@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer.RespawnConfig;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -38,7 +39,7 @@ public class PaintingTeleportHelper {
 	public static TeleportTransition getPaintingTeleportData(ServerLevel destWorld, Entity entity) {
 		entity.fallDistance = 0;
 		if (entity instanceof LivingEntity livingEntity) { //Give resistance
-			livingEntity.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 200, false, false));
+			livingEntity.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 200, 200, false, false));
 		}
 		BlockPos spawnPos = entity.blockPosition();
 
@@ -230,7 +231,8 @@ public class PaintingTeleportHelper {
 		// Set overworld back to respawn position when using painting.
 		if (destWorld.dimension() == Level.OVERWORLD) {
 			if (entity instanceof ServerPlayer serverPlayer) {
-				serverPlayer.setRespawnPosition(Level.OVERWORLD, pos, serverPlayer.getYRot(), true, false);
+				RespawnConfig config = new RespawnConfig(ServerLevel.OVERWORLD, pos, serverPlayer.getYRot(), true);
+				serverPlayer.setRespawnPosition(config, false);
 			}
 		}
 
@@ -238,7 +240,8 @@ public class PaintingTeleportHelper {
 			ResourceKey<Level> twilightKey = ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath("twilightforest", "twilight_forest"));
 			if (destWorld.dimension() == twilightKey) {
 				if (entity instanceof ServerPlayer serverPlayer) {
-					serverPlayer.setRespawnPosition(twilightKey, pos, serverPlayer.getYRot(), true, false);
+					RespawnConfig config = new RespawnConfig(twilightKey, pos, serverPlayer.getYRot(), true);
+					serverPlayer.setRespawnPosition(config, false);
 				}
 			}
 		}
@@ -247,7 +250,8 @@ public class PaintingTeleportHelper {
 			ResourceKey<Level> lostCityKey = ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath("lostcities", "lostcity"));
 			if (destWorld.dimension() == lostCityKey) {
 				if (entity instanceof ServerPlayer serverPlayer) {
-					serverPlayer.setRespawnPosition(lostCityKey, pos, serverPlayer.getYRot(), true, false);
+					RespawnConfig config = new RespawnConfig(lostCityKey, pos, serverPlayer.getYRot(), true);
+					serverPlayer.setRespawnPosition(config, false);
 				}
 			}
 		}

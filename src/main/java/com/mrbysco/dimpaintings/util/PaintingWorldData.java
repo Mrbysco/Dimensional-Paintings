@@ -1,112 +1,69 @@
 package com.mrbysco.dimpaintings.util;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Maps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mrbysco.dimpaintings.DimPaintings;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class PaintingWorldData extends SavedData {
 	private static final String DATA_NAME = DimPaintings.MOD_ID + "_world_data";
 
-	public PaintingWorldData(ListMultimap<ResourceLocation, PaintingLocation> paintingMap) {
-		this.paintingPositionMap.clear();
-		if (!paintingMap.isEmpty()) {
-			this.paintingPositionMap.putAll(paintingMap);
-		}
-	}
+
+	public static final Codec<PaintingWorldData> CODEC = RecordCodecBuilder.create(inst -> inst.group(
+					Codec.unboundedMap(
+									Level.RESOURCE_KEY_CODEC,
+									PaintingLocation.CODEC.listOf())
+							.fieldOf("paintingPositions").forGetter(data -> data.paintingPositionMap))
+			.apply(inst, PaintingWorldData::new));
+
+	private final Map<ResourceKey<Level>, List<PaintingLocation>> paintingPositionMap;
 
 	public PaintingWorldData() {
-		this(ArrayListMultimap.create());
+		this(Maps.newHashMap());
 	}
 
-	private final ListMultimap<ResourceLocation, PaintingLocation> paintingPositionMap = ArrayListMultimap.create();
-
-	public static PaintingWorldData load(CompoundTag tag, HolderLookup.Provider registries) {
-		ListMultimap<ResourceLocation, PaintingLocation> paintingMap = ArrayListMultimap.create();
-		for (String nbtName : tag.getAllKeys()) {
-			ListTag dimensionNBTList = new ListTag();
-			if (tag.getTagType(nbtName) == 9) {
-				Tag nbt = tag.get(nbtName);
-				if (nbt instanceof ListTag listNBT) {
-					if (!listNBT.isEmpty() && listNBT.getElementType() != CompoundTag.TAG_COMPOUND) {
-						continue;
-					}
-
-					dimensionNBTList = listNBT;
-				}
-			}
-			if (!dimensionNBTList.isEmpty()) {
-				List<PaintingLocation> posList = new ArrayList<>();
-				for (int i = 0; i < dimensionNBTList.size(); ++i) {
-					CompoundTag dimTag = dimensionNBTList.getCompound(i);
-
-					if (dimTag.contains("PaintingLocation", 10)) {
-						PaintingLocation.CODEC
-								.parse(registries.createSerializationContext(NbtOps.INSTANCE),
-										dimTag.get("PaintingLocation"))
-								.resultOrPartial(warn -> DimPaintings.LOGGER.warn("Failed to parse dimension location: '{}'", warn))
-								.ifPresent(posList::add);
-					}
-				}
-				paintingMap.putAll(ResourceLocation.tryParse(nbtName), posList);
-			}
-		}
-		return new PaintingWorldData(paintingMap);
+	public PaintingWorldData(Map<ResourceKey<Level>, List<PaintingLocation>> infoMap) {
+		this.paintingPositionMap = Maps.newHashMap(infoMap);
 	}
 
-	@Override
-	public CompoundTag save(CompoundTag compound, HolderLookup.Provider registries) {
-		for (ResourceLocation dimensionLocation : paintingPositionMap.keySet()) {
-			List<PaintingLocation> globalPosList = paintingPositionMap.get(dimensionLocation);
-
-			ListTag dimensionStorage = new ListTag();
-			for (PaintingLocation paintLoc : globalPosList) {
-				CompoundTag positionTag = new CompoundTag();
-				positionTag.put(
-						"PaintingLocation", PaintingLocation.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), paintLoc).getOrThrow()
-				);
-				dimensionStorage.add(positionTag);
-			}
-			compound.put(dimensionLocation.toString(), dimensionStorage);
-		}
-		return compound;
+	public List<PaintingLocation> getDimensionPositions(ResourceKey<Level> dimensionLocation) {
+		return paintingPositionMap.getOrDefault(dimensionLocation, new ArrayList<>());
 	}
 
-	public List<PaintingLocation> getDimensionPositions(ResourceLocation dimensionLocation) {
-		return paintingPositionMap.get(dimensionLocation);
-	}
-
-	public void addPositionToDimension(ResourceLocation dimensionLocation, BlockPos pos, Direction direction) {
+	public void addPositionToDimension(ResourceKey<Level> dimensionLocation, BlockPos pos, Direction direction) {
 		BlockPos roundedPos = new BlockPos((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
 		PaintingLocation position = new PaintingLocation(roundedPos, direction);
-		List<PaintingLocation> similarPos = paintingPositionMap.get(dimensionLocation).stream()
+		List<PaintingLocation> similarPos = paintingPositionMap.getOrDefault(dimensionLocation, new ArrayList<>()).stream()
 				.filter((loc) -> loc.distanceTo(roundedPos) < 2).collect(Collectors.toList());
 		if (similarPos.isEmpty()) {
-			paintingPositionMap.get(dimensionLocation)
-					.add(position);
+			List<PaintingLocation> positions = new ArrayList<>();
+			positions.add(position);
+			paintingPositionMap.put(dimensionLocation, positions);
 		}
 		setDirty();
 	}
 
-	public void removePositionFromDimension(ResourceLocation dimensionLocation, BlockPos pos) {
+	public void removePositionFromDimension(ResourceKey<Level> dimensionLocation, BlockPos pos) {
 		BlockPos roundedPos = new BlockPos((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
-		paintingPositionMap.get(dimensionLocation).removeIf((loc) -> loc.distanceTo(roundedPos) < 2);
+		paintingPositionMap.getOrDefault(dimensionLocation, new ArrayList<>()).removeIf((loc) -> loc.distanceTo(roundedPos) < 2);
 		setDirty();
+	}
+
+	public static SavedDataType<PaintingWorldData> type() {
+		return new SavedDataType<>(DATA_NAME, PaintingWorldData::new, CODEC, null);
 	}
 
 	public static PaintingWorldData get(Level world) {
@@ -115,7 +72,8 @@ public class PaintingWorldData extends SavedData {
 		}
 		ServerLevel overworld = world.getServer().getLevel(Level.OVERWORLD);
 
+		assert overworld != null;
 		DimensionDataStorage storage = overworld.getDataStorage();
-		return storage.computeIfAbsent(new SavedData.Factory<>(PaintingWorldData::new, PaintingWorldData::load), DATA_NAME);
+		return storage.computeIfAbsent(type());
 	}
 }

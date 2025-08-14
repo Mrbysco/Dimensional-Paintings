@@ -68,7 +68,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		if (!this.level().isClientSide) {
 			ServerLevel serverLevel = (ServerLevel) level;
 			PaintingWorldData worldData = PaintingWorldData.get(serverLevel);
-			worldData.addPositionToDimension(level.dimension().location(), getPos(), getDirection());
+			worldData.addPositionToDimension(level.dimension(), getPos(), getDirection());
 		}
 	}
 
@@ -119,7 +119,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	private void removeStoredPosition() {
 		ServerLevel serverWorld = (ServerLevel) this.level();
 		PaintingWorldData worldData = PaintingWorldData.get(serverWorld);
-		worldData.removePositionFromDimension(this.level().dimension().location(), getPos());
+		worldData.removePositionFromDimension(this.level().dimension(), getPos());
 	}
 
 	@Override
@@ -218,7 +218,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	public void addAdditionalSaveData(CompoundTag tag) {
 		VARIANT_CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.getDimensionType())
 				.ifSuccess(p_330061_ -> tag.merge((CompoundTag) p_330061_));
-		tag.putByte("Facing", (byte) this.direction.get2DDataValue());
+		tag.store("facing", Direction.LEGACY_ID_CODEC_2D, this.direction);
 		ItemStack itemstack = this.getItemRaw();
 		if (!itemstack.isEmpty()) {
 			tag.put("Item", this.getItem().save(this.registryAccess()));
@@ -229,10 +229,10 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	@Override
 	public void readAdditionalSaveData(CompoundTag tag) {
 		VARIANT_CODEC.parse(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), tag).ifSuccess(this::setDimensionType);
-		this.direction = Direction.from2DDataValue(tag.getByte("Facing"));
+		this.direction = tag.read("facing", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH);
 		ItemStack itemstack;
-		if (tag.contains("Item", 10)) {
-			itemstack = ItemStack.parse(this.registryAccess(), tag.getCompound("Item")).orElse(ItemStack.EMPTY);
+		if (tag.contains("Item")) {
+			itemstack = ItemStack.parse(this.registryAccess(), tag.getCompoundOrEmpty("Item")).orElse(ItemStack.EMPTY);
 		} else {
 			itemstack = ItemStack.EMPTY;
 		}
@@ -291,12 +291,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	 * Sets the location and rotation of the entity in the world.
 	 */
 	@Override
-	public void moveTo(double pX, double pY, double pZ, float pYaw, float pPitch) {
-		this.setPos(pX, pY, pZ);
-	}
-
-	@Override
-	public void lerpTo(double pX, double pY, double pZ, float pYRot, float pXRot, int pSteps) {
+	public void snapTo(double pX, double pY, double pZ, float pYaw, float pPitch) {
 		this.setPos(pX, pY, pZ);
 	}
 
