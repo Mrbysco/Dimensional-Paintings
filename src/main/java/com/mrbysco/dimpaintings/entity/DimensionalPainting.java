@@ -17,8 +17,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -40,6 +38,8 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DiodeBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
@@ -87,9 +87,9 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		if (this.isInvulnerableToBase(damageSource)) {
 			return false;
 		} else {
-			if (isAlive()) {
-				this.removeStoredPosition();
-				this.discard();
+			if (!this.isRemoved()) {
+				this.removeStoredPosition(serverLevel);
+				this.kill(serverLevel);
 				this.markHurt();
 				this.dropItem(serverLevel, damageSource.getEntity());
 			}
@@ -98,27 +98,26 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		}
 	}
 
+	@Override
 	public void move(MoverType type, Vec3 position) {
 		if (this.level() instanceof ServerLevel serverLevel && isAlive() && position.lengthSqr() > 0.0D) {
-			this.removeStoredPosition();
-			this.discard();
+			this.removeStoredPosition(serverLevel);
+			this.kill(serverLevel);
 			this.dropItem(serverLevel, (Entity) null);
 		}
-
 	}
 
+	@Override
 	public void push(double posX, double posY, double posZ) {
 		if (this.level() instanceof ServerLevel serverLevel && isAlive() && posX * posX + posY * posY + posZ * posZ > 0.0D) {
-			this.removeStoredPosition();
-			this.discard();
+			this.removeStoredPosition(serverLevel);
+			this.kill(serverLevel);
 			this.dropItem(serverLevel, (Entity) null);
 		}
-
 	}
 
-	private void removeStoredPosition() {
-		ServerLevel serverWorld = (ServerLevel) this.level();
-		PaintingWorldData worldData = PaintingWorldData.get(serverWorld);
+	private void removeStoredPosition(ServerLevel serverLevel) {
+		PaintingWorldData worldData = PaintingWorldData.get(serverLevel);
 		worldData.removePositionFromDimension(this.level().dimension(), getPos());
 	}
 
@@ -175,6 +174,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 
 	@Override
 	protected void defineSynchedData(SynchedEntityData.Builder builder) {
+		super.defineSynchedData(builder);
 		builder.define(DATA_ITEM_STACK, ItemStack.EMPTY);
 		builder.define(DIMENSION_TYPE, this.registryAccess().lookupOrThrow(DimensionPaintingType.REGISTRY_KEY).getAny().orElseThrow());
 	}
@@ -214,30 +214,25 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		return null;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
-	public void addAdditionalSaveData(CompoundTag tag) {
-		VARIANT_CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.getDimensionType())
-				.ifSuccess(p_330061_ -> tag.merge((CompoundTag) p_330061_));
-		tag.store("facing", Direction.LEGACY_ID_CODEC_2D, this.direction);
+	public void addAdditionalSaveData(ValueOutput output) {
+		output.store("variant", VARIANT_CODEC, this.getDimensionType());
+		output.store("facing", Direction.LEGACY_ID_CODEC_2D, this.getDirection());
 		ItemStack itemstack = this.getItemRaw();
 		if (!itemstack.isEmpty()) {
-			tag.put("Item", this.getItem().save(this.registryAccess()));
+			output.store("Item", ItemStack.CODEC, itemstack);
 		}
-		super.addAdditionalSaveData(tag);
+		super.addAdditionalSaveData(output);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
-	public void readAdditionalSaveData(CompoundTag tag) {
-		VARIANT_CODEC.parse(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), tag).ifSuccess(this::setDimensionType);
-		this.direction = tag.read("facing", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH);
-		ItemStack itemstack;
-		if (tag.contains("Item")) {
-			itemstack = ItemStack.parse(this.registryAccess(), tag.getCompoundOrEmpty("Item")).orElse(ItemStack.EMPTY);
-		} else {
-			itemstack = ItemStack.EMPTY;
-		}
-		super.readAdditionalSaveData(tag);
-		this.setDirection(this.direction);
+	public void readAdditionalSaveData(ValueInput input) {
+		input.read("variant", VARIANT_CODEC).ifPresent(this::setDimensionType);
+		ItemStack itemstack = input.read("Item", ItemStack.CODEC).orElse(ItemStack.EMPTY);
+		super.readAdditionalSaveData(input);
+		this.setDirection(input.read("facing", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH));
 		this.setItem(itemstack);
 	}
 
@@ -302,15 +297,16 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 
 	@Override
 	public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
-		buffer.writeByte((byte) this.direction.get2DDataValue());
-		buffer.writeUtf(this.getDimensionType().unwrapKey().orElseThrow().location().toString());
+		buffer.writeByte((byte) this.getDirection().get2DDataValue());
+		buffer.writeResourceKey(this.getDimensionType().unwrapKey().orElseThrow());
 		buffer.writeUtf(BuiltInRegistries.ITEM.getKey(getItem().getItem()).toString());
 	}
 
 	@Override
 	public void readSpawnData(RegistryFriendlyByteBuf additionalData) {
 		this.setDirection(Direction.from2DDataValue(additionalData.readByte()));
-		var dimensionValue = PaintingTypeRegistry.getHolder(this.registryAccess(), ResourceLocation.tryParse(additionalData.readUtf()));
+		ResourceKey<DimensionPaintingType> dimension = additionalData.readResourceKey(DimensionPaintingType.REGISTRY_KEY);
+		var dimensionValue = PaintingTypeRegistry.getHolder(this.registryAccess(), dimension);
 		this.setDimensionType(dimensionValue);
 		Item item = BuiltInRegistries.ITEM.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
 		if (item != null) {
@@ -321,7 +317,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	@Override
 	protected AABB calculateBoundingBox(BlockPos pos, Direction p_direction) {
 		float f = 0.46875F;
-		Vec3 vec3 = Vec3.atCenterOf(pos).relative(p_direction, -0.46875);
+		Vec3 vec3 = Vec3.atCenterOf(pos).relative(p_direction, -f);
 		DimensionPaintingType paintingType = this.getDimensionType().value();
 		double d0 = this.offsetForPaintingSize(paintingType.width());
 		double d1 = this.offsetForPaintingSize(paintingType.height());
@@ -350,8 +346,8 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		} else {
 			int i = Math.max(1, this.getWidth() / 16);
 			int j = Math.max(1, this.getHeight() / 16);
-			BlockPos blockpos = this.pos.relative(this.direction.getOpposite());
-			Direction direction = this.direction.getCounterClockWise();
+			BlockPos blockpos = this.pos.relative(this.getDirection().getOpposite());
+			Direction direction = this.getDirection().getCounterClockWise();
 			BlockPos.MutableBlockPos blockpos$mutable = new BlockPos.MutableBlockPos();
 
 			for (int k = 0; k < i; ++k) {
@@ -360,7 +356,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 					int j1 = (j - 1) / -2;
 					blockpos$mutable.set(blockpos).move(direction, k + i1).move(Direction.UP, l + j1);
 					BlockState blockstate = this.level().getBlockState(blockpos$mutable);
-					if (net.minecraft.world.level.block.Block.canSupportCenter(this.level(), blockpos$mutable, this.direction))
+					if (net.minecraft.world.level.block.Block.canSupportCenter(this.level(), blockpos$mutable, this.getDirection()))
 						continue;
 					if (!blockstate.isSolid() && !DiodeBlock.isDiode(blockstate)) {
 						return false;

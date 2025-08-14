@@ -58,7 +58,9 @@ public class PaintingWorldData extends SavedData {
 
 	public void removePositionFromDimension(ResourceKey<Level> dimensionLocation, BlockPos pos) {
 		BlockPos roundedPos = new BlockPos((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
-		paintingPositionMap.getOrDefault(dimensionLocation, new ArrayList<>()).removeIf((loc) -> loc.distanceTo(roundedPos) < 2);
+		List<PaintingLocation> paintings = new ArrayList<>(paintingPositionMap.getOrDefault(dimensionLocation, new ArrayList<>()));
+		paintings.removeIf((loc) -> loc.distanceTo(roundedPos) < 2);
+		paintingPositionMap.put(dimensionLocation, paintings);
 		setDirty();
 	}
 
