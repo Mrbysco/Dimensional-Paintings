@@ -13,7 +13,7 @@ public class CooldownHandler {
 	public void onPlayerTick(PlayerTickEvent.Post event) {
 		Player player = event.getEntity();
 		Level level = player.level();
-		if (!level.isClientSide && level.getGameTime() % 20 == 0 && DimensionalConfig.COMMON.teleportCooldown.get() > 0) {
+		if (!level.isClientSide() && level.getGameTime() % 20 == 0 && DimensionalConfig.COMMON.teleportCooldown.get() > 0) {
 			CompoundTag persistentData = player.getPersistentData();
 			if (persistentData.contains("PaintingCooldown")) {
 				int currentCooldown = persistentData.getIntOr("PaintingCooldown", 0) - 1;

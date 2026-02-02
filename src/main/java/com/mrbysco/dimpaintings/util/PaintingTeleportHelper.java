@@ -5,15 +5,15 @@ import com.mrbysco.dimpaintings.config.DimensionalConfig;
 import it.unimi.dsi.fastutil.longs.Long2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerPlayer.RespawnConfig;
+import net.minecraft.util.Util;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -25,6 +25,7 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.EndPlatformFeature;
 import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.NotNull;
@@ -130,7 +131,7 @@ public class PaintingTeleportHelper {
 		boolean isToOverworld = destWorld.dimension() == Level.OVERWORLD;
 		boolean isFromEnd = entity.level().dimension() == Level.END && isToOverworld;
 		if (isFromEnd && DimensionalConfig.COMMON.overworldToBed.get()) {
-			spawnPos = destWorld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, destWorld.getSharedSpawnPos());
+			spawnPos = destWorld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, destWorld.getRespawnData().pos());
 			return postProcessAndMake(destWorld, spawnPos, entity);
 		}
 
@@ -231,26 +232,27 @@ public class PaintingTeleportHelper {
 		// Set overworld back to respawn position when using painting.
 		if (destWorld.dimension() == Level.OVERWORLD) {
 			if (entity instanceof ServerPlayer serverPlayer) {
-				RespawnConfig config = new RespawnConfig(ServerLevel.OVERWORLD, pos, serverPlayer.getYRot(), true);
+				RespawnConfig config = new RespawnConfig(LevelData.RespawnData.of(ServerLevel.OVERWORLD, pos, serverPlayer.getYRot(), serverPlayer.getXRot()), true);
 				serverPlayer.setRespawnPosition(config, false);
 			}
 		}
 
 		if (ModList.get().isLoaded("twilightforest")) {
-			ResourceKey<Level> twilightKey = ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath("twilightforest", "twilight_forest"));
+			ResourceKey<Level> twilightKey = ResourceKey.create(Registries.DIMENSION, Identifier.fromNamespaceAndPath("twilightforest", "twilight_forest"));
 			if (destWorld.dimension() == twilightKey) {
 				if (entity instanceof ServerPlayer serverPlayer) {
-					RespawnConfig config = new RespawnConfig(twilightKey, pos, serverPlayer.getYRot(), true);
+					RespawnConfig config = new RespawnConfig(LevelData.RespawnData.of(twilightKey, pos, serverPlayer.getYRot(), serverPlayer.getXRot()), true);
 					serverPlayer.setRespawnPosition(config, false);
 				}
 			}
 		}
 
 		if (ModList.get().isLoaded("lostcities")) {
-			ResourceKey<Level> lostCityKey = ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath("lostcities", "lostcity"));
+			ResourceKey<Level> lostCityKey = ResourceKey.create(Registries.DIMENSION, Identifier.fromNamespaceAndPath("lostcities", "lostcity"));
 			if (destWorld.dimension() == lostCityKey) {
 				if (entity instanceof ServerPlayer serverPlayer) {
-					RespawnConfig config = new RespawnConfig(lostCityKey, pos, serverPlayer.getYRot(), true);
+					RespawnConfig config = new RespawnConfig(LevelData.RespawnData.of(lostCityKey, pos, serverPlayer.getYRot(), serverPlayer.getXRot()), true);
+
 					serverPlayer.setRespawnPosition(config, false);
 				}
 			}

@@ -11,7 +11,6 @@ import com.mrbysco.dimpaintings.registry.PaintingTypeRegistry;
 import com.mrbysco.dimpaintings.util.PaintingWorldData;
 import com.mrbysco.dimpaintings.util.TeleportHelper;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -22,10 +21,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Util;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -34,10 +34,10 @@ import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DiodeBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -65,7 +65,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		this.setDimensionType(paintingType);
 		this.setDirection(direction);
 
-		if (!this.level().isClientSide) {
+		if (!this.level().isClientSide()) {
 			ServerLevel serverLevel = (ServerLevel) level;
 			PaintingWorldData worldData = PaintingWorldData.get(serverLevel);
 			worldData.addPositionToDimension(level.dimension(), getPos(), getDirection());
@@ -130,7 +130,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	public void tick() {
 		super.tick();
 
-		if (!this.level().isClientSide && isAlive()) {
+		if (!this.level().isClientSide() && isAlive()) {
 			List<Entity> nearbyEntities = this.level().getEntitiesOfClass(Entity.class, getBoundingBox());
 			if (!nearbyEntities.isEmpty()) {
 				for (Iterator<Entity> iterator = nearbyEntities.iterator(); iterator.hasNext(); ) {
@@ -153,7 +153,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 	@Override
 	public void playerTouch(Player player) {
 		super.playerTouch(player);
-		if (!this.level().isClientSide && isAlive()) {
+		if (!this.level().isClientSide() && isAlive()) {
 			boolean flag = player.distanceTo(this) < 1 && !player.onGround();
 			if (flag && !player.isPassenger() && !player.isPassenger() && !player.isVehicle() && player.canTeleport(this.level(), getDimensionLevel())) {
 				boolean cooldownFlag = DimensionalConfig.COMMON.teleportCooldown.get() == 0;
@@ -196,7 +196,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		return this.entityData.get(DIMENSION_TYPE);
 	}
 
-	public ResourceLocation getDimensionLocation() {
+	public Identifier getDimensionLocation() {
 		return this.getDimensionType().value().dimensionId();
 	}
 
@@ -261,7 +261,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 
 	@Override
 	public void dropItem(ServerLevel level, @Nullable Entity entity) {
-		if (level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+		if (level.getGameRules().get(GameRules.ENTITY_DROPS)) {
 			this.playSound(SoundEvents.PAINTING_BREAK, 1.0F, 1.0F);
 			if (entity instanceof Player player) {
 				if (player.getAbilities().instabuild) {
@@ -308,7 +308,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 		ResourceKey<DimensionPaintingType> dimension = additionalData.readResourceKey(DimensionPaintingType.REGISTRY_KEY);
 		var dimensionValue = PaintingTypeRegistry.getHolder(this.registryAccess(), dimension);
 		this.setDimensionType(dimensionValue);
-		Item item = BuiltInRegistries.ITEM.getValue(ResourceLocation.tryParse(additionalData.readUtf()));
+		Item item = BuiltInRegistries.ITEM.getValue(Identifier.tryParse(additionalData.readUtf()));
 		if (item != null) {
 			this.setItem(new ItemStack(item));
 		}
@@ -341,30 +341,14 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 
 	@Override
 	public boolean survives() {
-		if (!this.level().noCollision(this)) {
+		if (this.hasLevelCollision(this.getPopBox())) {
 			return false;
 		} else {
-			int i = Math.max(1, this.getWidth() / 16);
-			int j = Math.max(1, this.getHeight() / 16);
-			BlockPos blockpos = this.pos.relative(this.getDirection().getOpposite());
-			Direction direction = this.getDirection().getCounterClockWise();
-			BlockPos.MutableBlockPos blockpos$mutable = new BlockPos.MutableBlockPos();
-
-			for (int k = 0; k < i; ++k) {
-				for (int l = 0; l < j; ++l) {
-					int i1 = (i - 1) / -2;
-					int j1 = (j - 1) / -2;
-					blockpos$mutable.set(blockpos).move(direction, k + i1).move(Direction.UP, l + j1);
-					BlockState blockstate = this.level().getBlockState(blockpos$mutable);
-					if (net.minecraft.world.level.block.Block.canSupportCenter(this.level(), blockpos$mutable, this.getDirection()))
-						continue;
-					if (!blockstate.isSolid() && !DiodeBlock.isDiode(blockstate)) {
-						return false;
-					}
-				}
-			}
-
-			return this.level().getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty();
+			boolean flag = BlockPos.betweenClosedStream(this.calculateSupportBox()).filter(pos -> !net.minecraft.world.level.block.Block.canSupportCenter(this.level(), pos, this.getDirection())).allMatch(p_423325_ -> {
+				BlockState blockstate = this.level().getBlockState(p_423325_);
+				return blockstate.isSolid() || DiodeBlock.isDiode(blockstate);
+			});
+			return flag && this.canCoexist(false);
 		}
 	}
 
