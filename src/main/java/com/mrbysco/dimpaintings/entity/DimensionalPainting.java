@@ -166,7 +166,7 @@ public class DimensionalPainting extends HangingEntity implements IEntityWithCom
 						TeleportHelper.teleportToGivenDimension(player, this.getDimensionLevel());
 					}
 				} else {
-					player.displayClientMessage(Component.translatable("dimpaintings.cooldown").withStyle(ChatFormatting.GOLD), true);
+					player.sendOverlayMessage(Component.translatable("dimpaintings.cooldown").withStyle(ChatFormatting.GOLD));
 				}
 			}
 		}

@@ -3,7 +3,7 @@ package com.mrbysco.dimpaintings.client;
 import com.mrbysco.dimpaintings.DimPaintings;
 import com.mrbysco.dimpaintings.client.renderer.DimensionalPaintingRenderer;
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
-import net.minecraft.client.resources.model.AtlasManager;
+import net.minecraft.client.resources.model.sprite.AtlasManager;
 import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;

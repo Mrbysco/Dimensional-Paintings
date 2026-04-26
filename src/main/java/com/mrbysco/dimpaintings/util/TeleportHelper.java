@@ -16,7 +16,7 @@ public class TeleportHelper {
 			entityIn.teleport(transition);
 		} else {
 			if (entityIn instanceof Player) {
-				((Player) entityIn).displayClientMessage(Component.translatable("dimpaintings.same_dimension").withStyle(ChatFormatting.YELLOW), true);
+				((Player) entityIn).sendOverlayMessage(Component.translatable("dimpaintings.same_dimension").withStyle(ChatFormatting.YELLOW));
 			}
 		}
 	}

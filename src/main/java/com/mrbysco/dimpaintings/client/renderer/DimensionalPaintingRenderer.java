@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -97,7 +97,7 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 						k1 = Mth.floor(painting.getZ() + (double) f2);
 				}
 
-				reusedState.lightCoordsPerBlock[l + k * i] = LevelRenderer.getLightColor(level, new BlockPos(i1, j1, k1));
+				reusedState.lightCoordsPerBlock[l + k * i] = LevelRenderer.getLightCoords(level, new BlockPos(i1, j1, k1));
 			}
 		}
 	}

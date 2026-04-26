@@ -6,12 +6,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mrbysco.dimpaintings.DimPaintings;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
-import net.minecraft.world.level.storage.DimensionDataStorage;
+import net.minecraft.world.level.storage.SavedDataStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class PaintingWorldData extends SavedData {
-	private static final String DATA_NAME = DimPaintings.MOD_ID + "_world_data";
+	private static final Identifier DATA_NAME = DimPaintings.modLoc("painting_data");
 
 
 	public static final Codec<PaintingWorldData> CODEC = RecordCodecBuilder.create(inst -> inst.group(
@@ -75,7 +76,7 @@ public class PaintingWorldData extends SavedData {
 		ServerLevel overworld = world.getServer().getLevel(Level.OVERWORLD);
 
 		assert overworld != null;
-		DimensionDataStorage storage = overworld.getDataStorage();
+		SavedDataStorage storage = overworld.getDataStorage();
 		return storage.computeIfAbsent(type());
 	}
 }
