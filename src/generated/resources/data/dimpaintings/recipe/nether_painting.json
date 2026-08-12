@@ -1,6 +1,5 @@
 {
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "key": {
     "O": "#c:obsidians",
     "P": "minecraft:painting"

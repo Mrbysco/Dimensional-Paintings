@@ -15,12 +15,12 @@ Just jump in :)
 [[dependencies.dimpaintings]]
 modId="minecraft"
 type="REQUIRED"
-versionRange="[26.1.1,)"
+versionRange="[26.2,)"
 ordering="NONE"
 side="BOTH"
 [[dependencies.dimpaintings]]
 modId="neoforge"
 type="REQUIRED"
-versionRange="[26.1.1.0-alpha,)"
+versionRange="[26.2.0.1-beta,)"
 ordering="NONE"
 side="BOTH"

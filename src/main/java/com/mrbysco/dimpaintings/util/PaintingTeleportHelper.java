@@ -96,7 +96,7 @@ public class PaintingTeleportHelper {
 		if (withGlass) {
 			BlockPos.betweenClosed(i - 2, j + 1, k - 2, i + 2, j + 4, k + 2).forEach((blockPos) -> {
 				if (!serverLevel.getFluidState(blockPos).isEmpty() || serverLevel.getBlockState(blockPos).getDestroySpeed(serverLevel, blockPos) >= 0) {
-					serverLevel.setBlockAndUpdate(blockPos, Blocks.BLACK_STAINED_GLASS.defaultBlockState());
+					serverLevel.setBlockAndUpdate(blockPos, Blocks.STAINED_GLASS.black().defaultBlockState());
 				}
 			});
 			BlockPos.betweenClosed(i - 1, j + 1, k - 1, i + 1, j + 3, k + 1).forEach((blockPos) -> {
@@ -171,7 +171,7 @@ public class PaintingTeleportHelper {
 	private static TeleportTransition toEnd(Entity entity, ServerLevel destWorld) {
 		// Get teleport position
 		BlockPos teleportPos = ServerLevel.END_SPAWN_POINT;
-		Vec3 vec3 = teleportPos.getBottomCenter();
+		Vec3 vec3 = Vec3.atBottomCenterOf(teleportPos);
 		EndPlatformFeature.createEndPlatform(destWorld, BlockPos.containing(vec3).below(), true);
 
 		return postProcessAndMake(destWorld, teleportPos, entity);

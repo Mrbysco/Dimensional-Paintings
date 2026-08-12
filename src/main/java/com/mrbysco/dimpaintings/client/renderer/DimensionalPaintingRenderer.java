@@ -8,7 +8,6 @@ import com.mrbysco.dimpaintings.client.ClientHandler;
 import com.mrbysco.dimpaintings.client.state.DimensionalPaintingRenderState;
 import com.mrbysco.dimpaintings.entity.DimensionalPainting;
 import com.mrbysco.dimpaintings.registry.DimensionPaintingType;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
@@ -21,6 +20,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
@@ -66,18 +66,18 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 		Direction direction = painting.getDirection();
 		reusedState.dimensionType = painting.getDimensionType().value();
 		reusedState.direction = direction;
-		int i = reusedState.dimensionType.width();
-		int j = reusedState.dimensionType.height();
-		if (reusedState.lightCoordsPerBlock.length != i * j) {
-			reusedState.lightCoordsPerBlock = new int[i * j];
+		int width = reusedState.dimensionType.width();
+		int height = reusedState.dimensionType.height();
+		if (reusedState.lightCoordsPerBlock.length != width * height) {
+			reusedState.lightCoordsPerBlock = new int[width * height];
 		}
 
-		float f = (float) (-i) / 2.0F;
-		float f1 = (float) (-j) / 2.0F;
+		float f = (float) (-width) / 2.0F;
+		float f1 = (float) (-height) / 2.0F;
 		Level level = painting.level();
 
-		for (int k = 0; k < j; k++) {
-			for (int l = 0; l < i; l++) {
+		for (int k = 0; k < height; k++) {
+			for (int l = 0; l < width; l++) {
 				float f2 = (float) l + f + 0.5F;
 				float f3 = (float) k + f1 + 0.5F;
 				int i1 = painting.getBlockX();
@@ -97,7 +97,7 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 						k1 = Mth.floor(painting.getZ() + (double) f2);
 				}
 
-				reusedState.lightCoordsPerBlock[l + k * i] = LevelRenderer.getLightCoords(level, new BlockPos(i1, j1, k1));
+				reusedState.lightCoordsPerBlock[l + k * width] = LightCoordsUtil.getLightCoords(level, new BlockPos(i1, j1, k1));
 			}
 		}
 	}

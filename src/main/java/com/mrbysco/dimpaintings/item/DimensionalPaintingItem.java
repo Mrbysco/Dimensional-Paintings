@@ -36,7 +36,7 @@ public class DimensionalPaintingItem extends Item {
 			DimensionalPainting dimensionalPainting = new DimensionalPainting(level, relativePos, direction, PaintingTypeRegistry.getHolder(level.registryAccess(), paintingDimension));
 			dimensionalPainting.setItem(stack);
 
-			EntityType.<HangingEntity>createDefaultStackConfig(level, stack, player).accept(dimensionalPainting);
+			EntityType.<HangingEntity>createDefaultStackConfig(level, stack, player).apply(dimensionalPainting);
 			if (dimensionalPainting.survives()) {
 				if (!level.isClientSide()) {
 					dimensionalPainting.playPlacementSound();
