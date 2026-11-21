@@ -6,11 +6,11 @@ import com.mrbysco.dimpaintings.DimPaintings;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.codec.RegistryFileCodec;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ExtraCodecs;
 import net.neoforged.neoforge.common.conditions.ConditionalOps;
@@ -42,7 +42,7 @@ public record DimensionPaintingType(Identifier dimensionId, int width, int heigh
 			DimensionPaintingType::assetId,
 			DimensionPaintingType::new
 	);
-	public static final Codec<Holder<DimensionPaintingType>> CODEC = RegistryFileCodec.create(DimensionPaintingType.REGISTRY_KEY, DIRECT_CODEC);
+	public static final Codec<Holder<DimensionPaintingType>> CODEC = RegistryFileCodec.create(DimensionPaintingType.REGISTRY_KEY, DIRECT_CODEC, false);
 	public static final StreamCodec<RegistryFriendlyByteBuf, Holder<DimensionPaintingType>> STREAM_CODEC = ByteBufCodecs.holder(
 			DimensionPaintingType.REGISTRY_KEY, DIRECT_STREAM_CODEC
 	);

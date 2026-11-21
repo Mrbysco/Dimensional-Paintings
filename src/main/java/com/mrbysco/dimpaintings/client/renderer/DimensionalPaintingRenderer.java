@@ -37,7 +37,7 @@ public class DimensionalPaintingRenderer extends EntityRenderer<DimensionalPaint
 	public void submit(DimensionalPaintingRenderState renderState, PoseStack poseStack,
 	                   SubmitNodeCollector nodeCollector, CameraRenderState cameraRenderState) {
 		poseStack.pushPose();
-		poseStack.mulPose(Axis.YP.rotationDegrees(180 - renderState.direction.get2DDataValue() * 90));
+		poseStack.rotateDegrees(Axis.YP, 180 - renderState.direction.get2DDataValue() * 90);
 		DimensionPaintingType dimensionType = renderState.dimensionType;
 		TextureAtlasSprite sprite = this.dimensionalPaintingsAtlas.getSprite(dimensionType.assetId());
 		TextureAtlasSprite backSprite = this.dimensionalPaintingsAtlas.getSprite(BACK_SPRITE_LOCATION);

@@ -1,21 +1,18 @@
 package com.mrbysco.dimpaintings.datagen.server;
 
 import com.mrbysco.dimpaintings.registry.PaintingRegistry;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.HolderLookup.Provider;
-import net.minecraft.data.PackOutput;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.data.recipes.RecipeCategory;
-import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
 import net.neoforged.neoforge.common.Tags;
 
-import java.util.concurrent.CompletableFuture;
-
 public class DimensionalRecipeProvider extends RecipeProvider {
-	public DimensionalRecipeProvider(HolderLookup.Provider provider, RecipeOutput recipeOutput) {
-		super(provider, recipeOutput);
+	public DimensionalRecipeProvider(BootstrapContext<Recipe<?>> recipeOutput, BootstrapContext<Advancement> advancementOutput) {
+		super(recipeOutput, advancementOutput);
 	}
 
 	@Override
@@ -34,10 +31,10 @@ public class DimensionalRecipeProvider extends RecipeProvider {
 				.pattern("OOO")
 				.pattern("OPO")
 				.pattern("OOO")
-				.define('O', Tags.Items.OBSIDIANS)
+				.define('O', Tags.BlockItems.OBSIDIANS.item())
 				.define('P', Items.PAINTING)
 				.unlockedBy("has_painting", has(Items.PAINTING))
-				.unlockedBy("has_obsidian", has(Tags.Items.OBSIDIANS))
+				.unlockedBy("has_obsidian", has(Tags.BlockItems.OBSIDIANS.item()))
 				.save(output);
 
 		shaped(RecipeCategory.TRANSPORTATION, PaintingRegistry.END_PAINTING.get())
@@ -50,21 +47,5 @@ public class DimensionalRecipeProvider extends RecipeProvider {
 				.unlockedBy("has_ender_eye", has(Items.ENDER_EYE))
 				.save(output);
 
-	}
-
-	public static class Runner extends RecipeProvider.Runner {
-		public Runner(PackOutput output, CompletableFuture<Provider> completableFuture) {
-			super(output, completableFuture);
-		}
-
-		@Override
-		protected RecipeProvider createRecipeProvider(HolderLookup.Provider provider, RecipeOutput recipeOutput) {
-			return new DimensionalRecipeProvider(provider, recipeOutput);
-		}
-
-		@Override
-		public String getName() {
-			return "Dimensional Painting Recipes";
-		}
 	}
 }

@@ -23,7 +23,7 @@ public class DimPaintings {
 	public static final Logger LOGGER = LogUtils.getLogger();
 
 	public DimPaintings(IEventBus eventBus, Dist dist, ModContainer container) {
-		container.registerConfig(Type.COMMON, DimensionalConfig.commonSpec);
+		container.registerConfig(Type.LOCAL, DimensionalConfig.commonSpec);
 		eventBus.register(DimensionalConfig.class);
 
 		PaintingSerializers.ENTITY_DATA_SERIALIZER.register(eventBus);

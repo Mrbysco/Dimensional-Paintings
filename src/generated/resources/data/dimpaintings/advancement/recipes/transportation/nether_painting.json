@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "dimpaintings:nether_painting"
+        "recipes": "dimpaintings:nether_painting"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

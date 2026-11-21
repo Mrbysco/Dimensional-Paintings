@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "dimpaintings:overworld_painting"
+        "recipes": "dimpaintings:overworld_painting"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

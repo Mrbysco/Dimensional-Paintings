@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "dimpaintings:end_painting"
+        "recipes": "dimpaintings:end_painting"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

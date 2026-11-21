@@ -7,13 +7,13 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.registries.DataPackRegistryEvent;
+import net.neoforged.neoforge.registries.NewDatapackRegistryEvent;
 
 @EventBusSubscriber(modid = DimPaintings.MOD_ID)
 public class PaintingTypeRegistry {
 	@SubscribeEvent
-	public static void onNewRegistry(DataPackRegistryEvent.NewRegistry event) {
-		event.dataPackRegistry(DimensionPaintingType.REGISTRY_KEY,
+	public static void onNewRegistry(NewDatapackRegistryEvent event) {
+		event.worldRegistry(DimensionPaintingType.REGISTRY_KEY,
 				DimensionPaintingType.DIRECT_CODEC, DimensionPaintingType.DIRECT_CODEC);
 		DimPaintings.LOGGER.info("Registered dimensional painting registry");
 	}
